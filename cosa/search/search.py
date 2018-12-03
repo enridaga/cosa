@@ -4,3 +4,5 @@ def createQueryNode():
 def createQueryGraph():
     return True
 
+def testFunction():
+    print ("Hello")
