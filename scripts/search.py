@@ -5,7 +5,8 @@ def main():
     from os.path import dirname, join, abspath
     sys.path.insert(0, abspath(join(dirname(__file__), '..')))
     from cosa.search.functions import createQueryNode
-    print createQueryNode()
+    import pprint
+    pprint.pprint (createQueryNode('flying drone quadcopter'))
 
 
 if __name__ == "__main__":
