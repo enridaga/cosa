@@ -43,66 +43,75 @@ class DBPedia:
 
 
 
-  def subjRequest(self, inputURI):
+  #Does a full request and returns the raw result
+  def dbpediaEndpointRequest(self, inputURI):
       url = self.dbpediaEndpoint
       headers = {'Accept': 'application/json'}
       sparqlQuery = ' \
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \
-PREFIX dcterm: <http://purl.org/dc/terms/> \
-SELECT ?obj ?label WHERE { \
-  <' + inputURI + '> dcterm:subject ?obj . \
-  ?obj rdfs:label ?label . filter (lang(?label) = "en") \
-} '
-
-      params = {'query': sparqlQuery}
-
-      resp = requests.get(url=url, params=params, headers=headers)
-      return resp.json()  # parse the JSON and return as a Python dict.
-
-  def assocDataRequest(self, inputURI):
-      url = self.dbpediaEndpoint
-      headers = {'Accept': 'application/json'}
-      sparqlQuery = ' \
-  SELECT ?obj WHERE { \
+PREFIX dct: <http://purl.org/dc/terms/> \
+SELECT ?obj ?T WHERE { \
   { \
   <' + inputURI + '> dct:subject ?obj . \
+    bind("S" as ?T) \
+  } UNION { \
+  <' + inputURI + '> dct:subject/skos:broader ?obj . \
+    bind("S" as ?T) \
+  } UNION { \
+  <' + inputURI + '> dct:subject/skos:broader/skos:broader ?obj . \
+    bind("S" as ?T) \
   } UNION { \
   <' + inputURI + '> <http://dbpedia.org/ontology/wikiPageRedirects> ?something . \
     ?something dct:subject ?obj . \
+    bind("S" as ?T) \
+  } UNION { \
+  <' + inputURI + '> <http://dbpedia.org/ontology/wikiPageRedirects> ?something . \
+    ?something dct:subject/skos:broader ?obj . \
+    bind("S" as ?T) \
+  } UNION { \
+  <' + inputURI + '> <http://dbpedia.org/ontology/wikiPageRedirects> ?something .  \
+    ?something dct:subject/skos:broader/skos:broader ?obj . \
+    bind("S" as ?T) \
   } UNION { \
   <' + inputURI + '> rdf:type ?obj . \
+        bind("T" as ?T) \
   } UNION { \
   <' + inputURI + '> <http://dbpedia.org/ontology/wikiPageRedirects> ?something . \
     ?something rdf:type ?obj . \
+        bind("T" as ?T) \
   } \
 }'
+
 
       params = {'query': sparqlQuery}
 
       resp = requests.get(url=url, params=params, headers=headers)
       return resp.json()  # parse the JSON and return as a Python dict.
 
-  def getSubjURIs(self, inputURI):
+  #Abstraction of dbpediaEndpointRequest(), just returns simplified Subject and Type URIs
+  def getSubjTypeURIs(self,inputURI):
       returnArray = []
-      fullResponse = self.subjRequest(inputURI)
+      fullResponse = self.dbpediaEndpointRequest(inputURI)
       try:
           bindings = fullResponse['results']['bindings']
           for binding in bindings:
-              returnArray.append(binding['obj']['value'])
+              singleItem = {}
+              singleItem['uri'] = binding['obj']['value']
+              singleItem['type'] = binding['T']['value']
+              returnArray.append(singleItem)
               #print 'Category: ', binding['obj']['value']
       except KeyError:
           pass
       return returnArray
 
-  def getAssocURIs(self, inputURI):
-      returnArray = []
-      fullResponse = self.assocDataRequest(inputURI)
-      try:
-          bindings = fullResponse['results']['bindings']
-          for binding in bindings:
-              returnArray.append(binding['obj']['value'])
-              #print 'Category: ', binding['obj']['value']
-      except KeyError:
-          pass
-      return returnArray
+  #just get the Subject URIs
+  def getSubjURIs(self, inputURI):
+      return True
+
+  #Just get the type URIs
+  def getTypeURIs(self, inputURI):
+      return True
+
+
