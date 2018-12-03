@@ -18,6 +18,10 @@ def spotlight(searchText, confidence):
 
     if 'Resources' in resp.json():
         # print resp.json()
+        resourcesDict = resp.json()
+        returnObj = {}
+        for item in resourcesDict:
+
         return resp.json()  # parse the JSON and return as a Python dict.
     else:
         #what to do here?
