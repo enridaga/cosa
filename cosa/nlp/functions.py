@@ -19,5 +19,11 @@ def text2terms(text):
                lemma = lemmatiser.lemmatize(token[0], pos=token[1][0:1].lower())
            except Exception as e:
                lemma = lemmatiser.lemmatize(token[0])
-           keywords.append(token[0].lower()+'[' + token[1][0:1].lower() +  ']')
+           keywords.append(enpos(token[0], token[1]))
     return keywords
+
+def enpos(lemma, pos):
+    return lemma.lower() + '[' + pos[0:1].lower() + ']'
+
+def depos(term):
+    return term[0:term.find('[')]

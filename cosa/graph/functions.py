@@ -95,6 +95,11 @@ def csv2graph(input, output):
             dictionary[p]['sub'].append(dictionary[key])
 
     saveGraph(graph, output)
-    
-def shitHappens():
-    print "It does indeed!"
+
+def traverse(node, callback):
+    callback(node)
+    if 'sub' in node:
+        for sub in node['sub']:
+            traverse(sub, callback)
+        
+
