@@ -1,9 +1,10 @@
-def save(dic, output):
+
+def saveGraph(dic, output):
     f = open(output,'w')
     f.write(str(dic))
     f.close()
 
-def load(input):
+def loadGraph(input):
     f = open(input,'r')
     data=f.read()
     f.close()

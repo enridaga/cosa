@@ -1,2 +1,2 @@
-import .graph
-import .search
+import graph
+import search
