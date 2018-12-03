@@ -1,0 +1,10 @@
+- Load graph from file
+
+- Build a query node from search input (this is now the root of our search graph)
+
+- Perform a matching function (TBC exactly how this works) against the root node of main data graph
+    - Traverse the main data graph appropriately, performing the above scoring function against child nodes
+    - For each result, build up the search graph, with scores
+
+
+
