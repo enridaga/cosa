@@ -68,6 +68,10 @@ def csv2graph(input, output):
             dictionary[code]["label"] = row["Description"]
             dictionary[code]["codeBase"] = codeBase
             dictionary[code]["codeSuffix"] = codeSuffix
+            if dictionary[code]['label'] == 'Other':
+                dictionary[code]['other'] = True
+            else:
+                dictionary[code]['other'] = False
 
     for key in dictionary:
         currentKey = key
@@ -81,18 +85,18 @@ def csv2graph(input, output):
                 dictionary[currentKey]['parent'] = False
                 keepLooping = False
 
-    graph = {'sub': []}
+    graph = {'sub': {}}
     for key in dictionary:
         dictionary[key].pop('hierarchy', None)
         dictionary[key].pop('codeBase', None)
         dictionary[key].pop('codeSuffix', None)
         if(dictionary[key]['parent'] == False):
-            graph['sub'].append(dictionary[key])
+            graph['sub'][key] = dictionary[key]
         else:
             p = dictionary[key]['parent']
             if not 'sub' in dictionary[p]:
-                dictionary[p]['sub'] = []
-            dictionary[p]['sub'].append(dictionary[key])
+                dictionary[p]['sub'] = {}
+            dictionary[p]['sub'][key] = dictionary[key]
 
     saveGraph(graph, output)
 
@@ -100,6 +104,6 @@ def traverse(node, callback):
     callback(node)
     if 'sub' in node:
         for sub in node['sub']:
-            traverse(sub, callback)
+            traverse(node['sub'][sub], callback)
         
 

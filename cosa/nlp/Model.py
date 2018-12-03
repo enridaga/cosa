@@ -18,8 +18,12 @@ from pyspark import SparkConf
 
 class Model:
     _word2vec = None
+    L = None
     def __init__(self, modelFile):
         sconf = SparkConf()
+        encoding="utf-8" # ISO-8859-1 "utf-8" # FIXME Ugly but necessary
+        sys.setdefaultencoding(encoding)
+        
         # FIXME Find a way to set this outside ...
         sconf.set("spark.driver.memory", "8g")
         sconf.set("spark.executor.memory", "8g")
@@ -38,7 +42,7 @@ class Model:
         sc = ss.sparkContext
         sc.setLogLevel("INFO")
         Logger= ss._jvm.org.apache.log4j.Logger
-        L = Logger.getLogger(__name__)
+        self.L = Logger.getLogger(__name__)
         try:
             self._word2vec = Word2VecModel.load(sc, modelFile)
         except Exception as e:
@@ -46,23 +50,24 @@ class Model:
             sc.stop()
             exit()
     
-    def similarToTerm(term, num):
+    def similarToTerm(self, term, num):
         first=lambda x: x[0]
         # print "Looking for syns of " + depos(key)
-        if len(key[0:key.find('[')]) < 3:
-            L.debug(  "Skipping short string '%s', length %d" % (key,len(key)))
+        if len(term[0:term.find('[')]) < 3:
+            self.L.debug(  "Skipping short string '%s', length %d" % (term,len(term)))
             return {}
         try:
-            L.trace("Processing %s" % term)
-            key=key.decode(encoding)
+            self.L.trace("Processing %s" % term)
+            encoding="ISO-8859-1" # FIXME Ugly but required
+            term=term.decode(encoding)
         except UnicodeError:
-            L.debug( "Skipping invalid string '%s', length %d bytes" % (key, len(key)))
+            self.L.debug( "Skipping invalid string '%s', length %d bytes" % (term, len(term)))
             return {}
         terms = {term: 1.0}
         try:
-            terms = self._word2vec.findSynonyms(key, num)
+            terms = self._word2vec.findSynonyms(term, num)
         except UnicodeDecodeError:
-            L.debug(  "unicode error on string '%s', length %d bytes" % (key, len(key)))
+            self.L.debug(  "unicode error on string '%s', length %d bytes" % (term, len(term)))
         except Exception as e:
             pass #print " - not found (exception)"
         except Error as r:

@@ -18,8 +18,12 @@ def text2terms(text):
            try:
                lemma = lemmatiser.lemmatize(token[0], pos=token[1][0:1].lower())
            except Exception as e:
-               lemma = lemmatiser.lemmatize(token[0])
-           keywords.append(enpos(token[0], token[1]))
+               try:
+                   lemma = lemmatiser.lemmatize(token[0])
+               except Exception as e: 
+                   # Skipping keyword                  
+                   continue
+           keywords.append(enpos(lemma, token[1]))
     return keywords
 
 def enpos(lemma, pos):

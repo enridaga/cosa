@@ -1,4 +1,23 @@
-
+# dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
+def entities(input, dbpedia):
+    spotlight = dbpedia.spotlight(input, 0.1)
+    entities = {}
+    for item in spotlight:
+        entities[item] = {}
+        entities[item]['score'] = spotlight[item]['score']
+        entities['types'] = []
+        entities['subjects'] = []
+        dbpSubjsTypes = dbedia.getSubjTypeURIs(item) #returns an array
+        for arrayItem in dbpSubjsTypes:
+            if arrayItem['type'] == 'S':
+                entities[item]['subjects'].append(arrayItem['uri'])
+            elif arrayItem['type'] == 'T':
+                entities[item]['types'].append(arrayItem['uri'])
+            else:
+                pass #it wasn't a 'subject' or 'Type', something went wrong
+    return entities
+    
+    
 def createQueryNode(input):
     import sys
     from os.path import dirname, join, abspath
