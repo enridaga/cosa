@@ -91,6 +91,7 @@ SELECT ?obj ?T WHERE { \
       return resp.json()  # parse the JSON and return as a Python dict.
 
   #Abstraction of dbpediaEndpointRequest(), just returns simplified Subject and Type URIs
+  #USE THIS FOR MOST USES
   def getSubjTypeURIs(self,inputURI):
       returnArray = []
       fullResponse = self.dbpediaEndpointRequest(inputURI)
@@ -108,10 +109,36 @@ SELECT ?obj ?T WHERE { \
 
   #just get the Subject URIs
   def getSubjURIs(self, inputURI):
-      return True
+      returnArray = []
+      fullResponse = self.dbpediaEndpointRequest(inputURI)
+      try:
+          bindings = fullResponse['results']['bindings']
+          for binding in bindings:
+              singleItem = {}
+              singleItem['uri'] = binding['obj']['value']
+              singleItem['type'] = binding['T']['value']
+              if singleItem['type'] == 'S':
+                returnArray.append(singleItem)
+              # print 'Category: ', binding['obj']['value']
+      except KeyError:
+          pass
+      return returnArray
 
   #Just get the type URIs
   def getTypeURIs(self, inputURI):
-      return True
+      returnArray = []
+      fullResponse = self.dbpediaEndpointRequest(inputURI)
+      try:
+          bindings = fullResponse['results']['bindings']
+          for binding in bindings:
+              singleItem = {}
+              singleItem['uri'] = binding['obj']['value']
+              singleItem['type'] = binding['T']['value']
+              if singleItem['type'] == 'T':
+                returnArray.append(singleItem)
+              # print 'Category: ', binding['obj']['value']
+      except KeyError:
+          pass
+      return returnArray
 
 
