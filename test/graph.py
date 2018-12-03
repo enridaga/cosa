@@ -36,7 +36,8 @@ class GraphTest(unittest.TestCase):
         node['sub'].append(subItem)
 
         pprint.pprint(node)
-    
+
+
     def test_saveAndLoad(self):
         dict = {"a": 1,"b": 2, "c": 3,"e": {"h":0, "j":1, "k": 2, "l": ["m", 10, 11, 12]} }
         #arr = {0,1,2,3,4,5,6,7,8}
