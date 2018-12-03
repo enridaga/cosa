@@ -7,6 +7,7 @@ def createQueryNode(input):
     from cosa.nlp.functions import text2terms
     node = {}
     node['label'] = input
+    node['other'] = False
     node['terms'] = {}
     node['entities'] = {}
     myDBPedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
@@ -40,7 +41,8 @@ def addNodeToQueryGraph():
 def createQueryGraph():
     return True
 
-def matchNodes():
+def matchNodes(queryNode, nodeInGraph):
+    #Do the magic scoring here...
     return True
 
 
