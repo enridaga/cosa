@@ -5,16 +5,26 @@ class DBPedia:
     self.spotlightEndpoint = spotlightEndpoint
     self.dbpediaEndpoint = dbpediaEndpoint
 
-  def spotlight(self, searchText):
+  def spotlight(self, searchText, confidence):
       url = self.spotlightEndpoint
-      confidence = 0.3
+      #confidence = 0.3
       headers = {'Accept': 'application/json'}
       params = {'text': searchText.lower(), 'confidence': confidence} #requests lib auto url-encodes this for us
       resp = requests.get(url=url, params=params, headers=headers)
 
       if 'Resources' in resp.json():
           #print resp.json()
-          return resp.json()  # parse the JSON and return as a Python dict.
+          returnObj = {}
+          for item in resp.json()['Resources']:
+              singleResource = {}
+              singleResource['score'] = item['@similarityScore']
+              singleResource['offset'] = item['@offset']
+              singleResource['surfaceForm'] = item['@surfaceForm']
+              returnObj[item['@URI']] = singleResource
+
+          return returnObj
+
+      '''
       else:
           confidence = 0.2
           params = {'text': searchText.lower(), 'confidence': confidence}  # requests lib auto url-encodes this for us
@@ -29,7 +39,7 @@ class DBPedia:
               resp = requests.get(url=url, params=params, headers=headers)
               #print resp.json()
               return resp.json()  # parse the JSON and return as a Python dict.
-
+      '''
 
 
 
