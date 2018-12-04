@@ -33,7 +33,7 @@ def _dbpedia(input, output):
     def populate(n):
         if 'label' in n:
             n['entities'] = entities(n['label'],dbpedia)
-            print n['label']
+            print n['code']
 
     traverse(g, populate)
     saveGraph(g, output)
