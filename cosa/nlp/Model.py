@@ -49,7 +49,8 @@ class Model:
             L.error( "Exiting: " + str(e))
             sc.stop()
             exit()
-    
+
+    """Returns a list of tuples (term, score) """
     def similarToTerm(self, term, num):
         first=lambda x: x[0]
         # print "Looking for syns of " + depos(key)
@@ -63,7 +64,7 @@ class Model:
         except UnicodeError:
             self.L.debug( "Skipping invalid string '%s', length %d bytes" % (term, len(term)))
             return {}
-        terms = {term: 1.0}
+
         try:
             terms = self._word2vec.findSynonyms(term, num)
         except UnicodeDecodeError:
@@ -73,6 +74,8 @@ class Model:
         except Error as r:
             pass #print " - error"
     
+        terms = dict(terms)
+        terms[term] = 1.0
         return terms
         
         
