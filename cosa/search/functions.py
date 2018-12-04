@@ -1,13 +1,20 @@
 # dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
 def entities(input, dbpedia):
+    import sys
+    from os.path import dirname, join, abspath
+    sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+    from cosa.dbpedia.DBPedia import DBPedia
     spotlight = dbpedia.spotlight(input, 0.1)
     entities = {}
-    for item in spotlight:
+
+    #if no entities returned (eg root node), just return empty entities dict
+
+    for item in spotlight or []:
         entities[item] = {}
         entities[item]['score'] = spotlight[item]['score']
-        entities['types'] = []
-        entities['subjects'] = []
-        dbpSubjsTypes = dbedia.getSubjTypeURIs(item) #returns an array
+        entities[item]['types'] = []
+        entities[item]['subjects'] = []
+        dbpSubjsTypes = dbpedia.getSubjTypeURIs(item) #returns an array
         for arrayItem in dbpSubjsTypes:
             if arrayItem['type'] == 'S':
                 entities[item]['subjects'].append(arrayItem['uri'])
@@ -48,8 +55,7 @@ def createQueryNode(input):
     #Now create terms from label
     for term in text2terms(node['label']):
         node['terms'][term] = {
-            'term': term,
-            'score': 1.0
+            term: 1.0
         }
 
     return node
