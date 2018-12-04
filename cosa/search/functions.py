@@ -1,8 +1,9 @@
+import sys
+from os.path import dirname, join, abspath
+sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+
 # dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
 def entities(input, dbpedia):
-    import sys
-    from os.path import dirname, join, abspath
-    sys.path.insert(0, abspath(join(dirname(__file__), '..')))
     from cosa.dbpedia.DBPedia import DBPedia
     spotlight = dbpedia.spotlight(input, 0.1)
     entities = {}
@@ -24,11 +25,8 @@ def entities(input, dbpedia):
                 pass #it wasn't a 'subject' or 'Type', something went wrong
     return entities
     
-    
-def createQueryNode(input):
-    import sys
-    from os.path import dirname, join, abspath
-    sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+
+def prepareQueryNode(input):
     from cosa.dbpedia.DBPedia import DBPedia
     from cosa.nlp.functions import text2terms
     node = {}
@@ -36,6 +34,17 @@ def createQueryNode(input):
     node['other'] = False
     node['terms'] = {}
     node['entities'] = {}
+    #Now create terms from label
+    for term in text2terms(node['label']):
+        node['terms'][term] = {
+            term: 1.0
+        }
+    return node
+            
+def createQueryNode(input):
+    from cosa.dbpedia.DBPedia import DBPedia
+    from cosa.nlp.functions import text2terms
+    node = prepareQueryNode(input)
     myDBPedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
     spotlight = myDBPedia.spotlight(input, 0.1)
     for item in spotlight:
@@ -51,13 +60,6 @@ def createQueryNode(input):
                 node['entities'][item]['types'].append(arrayItem['uri'])
             else:
                 pass #it wasn't a 'subject' or 'Type', something went wrong
-
-    #Now create terms from label
-    for term in text2terms(node['label']):
-        node['terms'][term] = {
-            term: 1.0
-        }
-
     return node
 
 def addNodeToQueryGraph():
