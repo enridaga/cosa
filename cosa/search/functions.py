@@ -55,8 +55,7 @@ def createQueryNode(input):
     #Now create terms from label
     for term in text2terms(node['label']):
         node['terms'][term] = {
-            'term': term,
-            'score': 1.0
+            term: 1.0
         }
 
     return node
