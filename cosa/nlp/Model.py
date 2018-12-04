@@ -49,7 +49,8 @@ class Model:
             L.error( "Exiting: " + str(e))
             sc.stop()
             exit()
-    
+
+    """Returns a list of tuples (term, score) """
     def similarToTerm(self, term, num):
         first=lambda x: x[0]
         # print "Looking for syns of " + depos(key)
