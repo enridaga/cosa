@@ -75,6 +75,9 @@ class Model:
             pass #print " - error"
     
         terms = dict(terms)
+        u = term
+        if not isinstance(u, unicode):
+            u = unicode(u, 'utf-8')
         terms[term] = 1.0
         return terms
         

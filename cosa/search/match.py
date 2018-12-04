@@ -1,23 +1,23 @@
 import os
 import csv
-from nltk import pos_tag
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
+from cosa.nlp.functions import *
 import io
 import sys
 
 """Returns a double"""
-def matchTerms(query, node):
+def matchTerms(queryLabel, nodeLabel, model):
     # Get terms from query
-    t = query['terms'].keys()
-    if not 'terms' in node:
-        return 0.0
-    nsize = len(node['terms'])
-    qsize = len(query['terms'])
+    q = text2terms (queryLabel)
+    t = text2terms (nodeLabel)
+    qsize = len(q)
+    nsize = len(t)
     tfreq = 0.0
-    for ttt in node['terms']:
-        dic = node['terms'][ttt]
-        for qt in t:
+    
+    for ttt in t:
+        dic = model.similarToTerm(ttt, 100000)
+        for qt in q:
+            if not isinstance(qt, unicode):
+                qt = unicode(qt, "utf-8")
             if qt in dic:
                 tfreq += dic[qt]
     
