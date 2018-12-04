@@ -25,10 +25,18 @@ def _embeddings(file, inp, out):
     saveGraph(g, out)
 
 def _dbpedia(input, output):
-    from cosa.graph.functions import loadGraph
+    from cosa.graph.functions import traverse, saveGraph, loadGraph
+    from cosa.search.functions import entities
+    from cosa.dbpedia.DBPedia import DBPedia
+    dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
     g = loadGraph(input)
     def populate(n):
-        n['entities'] = {}
+        if 'label' in n:
+            n['entities'] = entities(n['label'],dbpedia)
+            print n['label']
+
+    traverse(g, populate)
+    saveGraph(g, out)
         
     
 def browse(input):
@@ -63,7 +71,7 @@ def main():
     elif(func == 'populate-terms'):
         _embeddings(sys.argv[2], sys.argv[3], sys.argv[4])
     elif(func == 'populate-entities'):
-        _embeddings(sys.argv[2], sys.argv[3])
+        _dbpedia(sys.argv[2], sys.argv[3])
     elif(func == 'browse'):
         browse(sys.argv[2])
     else:
