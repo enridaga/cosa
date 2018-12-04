@@ -2,7 +2,7 @@ import os
 import csv
 from nltk import pos_tag
 from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
+from nltk.stem.wordnet import WordNetLemmatizer
 import io
 import sys
 
@@ -13,18 +13,20 @@ def text2terms(text):
     tokens_pos = pos_tag(tokens)
     keywords = []
     for token in tokens_pos:
+        print token
+        lemma = None
         if len(token[0]) < 3:
             continue
-        if token[1]:
-           try:
-               lemma = lemmatiser.lemmatize(token[0], pos=token[1][0:1].lower())
-           except Exception as e:
-               try:
-                   lemma = lemmatiser.lemmatize(token[0])
-               except Exception as e: 
-                   # Skipping keyword                  
-                   continue
-           keywords.append(enpos(lemma, token[1]))
+        # if token[1]:
+        #     print token[0]
+        #     try:
+        #         lemma = lemmatiser.lemmatize(token[0], pos=token[1][0:1].lower())
+        #     except Exception as e:
+        #         continue
+        # if lemma == None:
+        lemma = lemmatiser.lemmatize(token[0].lower())
+        keywords.append(enpos(lemma, token[1]))
+    
     return keywords
 
 def enpos(lemma, pos):
