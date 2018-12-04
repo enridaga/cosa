@@ -1,6 +1,8 @@
 import sys
 from os.path import dirname, join, abspath
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+from cosa.graph.functions import traverse, saveGraph, loadGraph
+from cosa.dbpedia.DBPedia import DBPedia
 
 # dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
 def entities(input, dbpedia):
@@ -62,14 +64,55 @@ def createQueryNode(input):
                 pass #it wasn't a 'subject' or 'Type', something went wrong
     return node
 
+def sortAndCut(queue,percentage):
+    from operator import itemgetter
+    sortedList = sorted(queue, key=itemgetter('parentScore'),reverse=True)
+    newLength = int(float(len(sortedList)) * (float(percentage)/100))
+    return sortedList[:newLength]
+
+def searchGraph(input, graph):
+    qNode = createQueryNode(input)
+    thisQ = []
+    nextQ = []
+    model = Model(modelFile)
+    rs = ResultSet()
+
+    #initially populate thisQ with graph root first layer subs
+    for sub in graph['subs']:
+        thisQ.append(graph['subs'][sub])
+
+    while (thisQ > 0) or (nextQ > 0):
+        while thisQ > 0:
+            currentNode = thisQ.pop()
+            score = nodeMatch(qNode, currentNode)
+            if 'parentScore' in currentNode:
+                score += currentNode['parentScore']
+            currentNode['score'] = score
+            if isLeaf(currentNode):
+                rs.collect(currentNode)
+            else:
+                for sub in currentNode['subs']:
+                    currentNode['subs'][sub]['parentScore'] = score
+                    nextQ.append(currentNode['subs'][sub])
+
+        thisQ = sortAndCut(nextQ,50)
+        nextQ = []
+
+
+
+
+
+
+
+
+
+
+
+
 def addNodeToQueryGraph():
     return True
 
 def createQueryGraph():
-    return True
-
-def matchNodes(queryNode, nodeInGraph):
-    #Do the magic scoring here...
     return True
 
 
