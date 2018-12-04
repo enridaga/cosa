@@ -36,7 +36,7 @@ def _dbpedia(input, output):
             print n['label']
 
     traverse(g, populate)
-    saveGraph(g, out)
+    saveGraph(g, output)
         
     
 def browse(input):
