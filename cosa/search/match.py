@@ -61,7 +61,9 @@ def matchSubjects(queryEntities, nodeEntities):
 def matchEntities(queryEntities, nodeEntities):
     return ((matchTypes(queryEntities, nodeEntities) + matchSubjects(queryEntities, nodeEntities)) / 2)
 
-
-            
+def matchNodes(queryNode, categoryNode):
+    queryEntities = queryNode['entities']
+    categoryEntities = categoryNode['entities']    
+    return matchEntities(queryEntities, nodeEntities)
             
             
