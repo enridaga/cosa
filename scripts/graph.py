@@ -40,7 +40,6 @@ def browse(input):
         if 'sub' in n:
             for s in n['sub']:
                 print ' - ', s, ': ', n['sub'][s]['label']
-
     _show(g)    
     while(True):
         line = sys.stdin.readline().strip()

@@ -6,6 +6,7 @@ from nltk.stem import WordNetLemmatizer
 import io
 import sys
 
+"""Returns an array of keywords"""
 def text2terms(text):
     lemmatiser = WordNetLemmatizer()
     tokens = word_tokenize(text)
