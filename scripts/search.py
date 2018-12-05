@@ -17,25 +17,29 @@ def _test():
     g = loadGraph('../data/graph_entities.dict')
     searchGraph('knitted jumper',g)
 
-
-
-
-
-
-def _search(text):
+def _search():
     print 'Loading graph...'
     g = loadGraph('../data/graph_entities.dict')
     print 'Graph loaded.'
-    rs = ResultSet()
-    rs = searchGraph(text, g)
+    while(True):
+        print 'Search:'
+        text = sys.stdin.readline()
+        text = text.split(':')
+        method = 'entities'
+        if len(text) > 1:
+            method = text[0]
+            text = text[1]
+        print 'Searching with method ' + method + '...'
+        rs = ResultSet()
+        rs = searchGraph(text, g)
 
-    print '**************'
-    print 'Top 10 results by score'
-    rs.printTopScores(10);
+        print '**************'
+        print 'Top 10 results by score'
+        rs.printTopScores(10);
 
-    print '**************'
-    print 'Top 10 results by normalised(by depth) score'
-    rs.printTopNScores(10);
+        print '**************'
+        print 'Top 10 results by normalised(by depth) score'
+        rs.printTopNScores(10);
 
     
 def main():
@@ -44,7 +48,7 @@ def main():
         
     func = sys.argv[1]
     if(func == 'search'):
-        _search(sys.argv[2])
+        _search()
     else:
         _test()
 

@@ -6,7 +6,7 @@ import sys
 import time
 
 """Returns a double"""
-def matchTerms(queryLabel, nodeLabel, model, number = 1000):
+def matchTerms(queryLabel, nodeLabel, model, number):
     start_time = time.time()
     # Get terms from query
     q = text2terms (queryLabel)
@@ -61,9 +61,20 @@ def matchSubjects(queryEntities, nodeEntities):
 def matchEntities(queryEntities, nodeEntities):
     return ((matchTypes(queryEntities, nodeEntities) + matchSubjects(queryEntities, nodeEntities)) / 2)
 
-def matchNodes(queryNode, categoryNode):
-    queryEntities = queryNode['entities']
-    categoryEntities = categoryNode['entities']    
-    return matchEntities(queryEntities, categoryEntities)
-            
-            
+def matchNodes(queryNode, categoryNode, method = 'entities', model = None, embeddings = 1000):
+    if method == 'entities':
+        queryEntities = queryNode['entities']
+        categoryEntities = categoryNode['entities']    
+        return matchEntities(queryEntities, categoryEntities)
+    elif method == 'types':
+        queryEntities = queryNode['entities']
+        categoryEntities = categoryNode['entities']    
+        return matchTypes(queryEntities, categoryEntities)
+    elif method == 'subjects':
+        queryEntities = queryNode['entities']
+        categoryEntities = categoryNode['entities']    
+        return matchSubjects(queryEntities, categoryEntities)
+    elif method == 'terms':
+        return matchTerms(queryNode['label'], categoryNode['label'], model, embeddings)        
+    else:
+        raise ValueError('Unknown method: ' + method)    
