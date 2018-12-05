@@ -1,26 +1,42 @@
 #!/usr/local/bin/python
-
+import sys
+from os.path import dirname, join, abspath
+sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+from cosa.search.functions import createQueryNode, sortAndCut, searchGraph
+from cosa.graph.functions import traverse, loadGraph
+from cosa.search.ResultSet import ResultSet
 
 def _test():
     import sys
     from os.path import dirname, join, abspath
     sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-    from cosa.search.functions import createQueryNode, matchNodes
-    from cosa.graph.functions import traverse
-    import pprint
+    from cosa.search.functions import createQueryNode, sortAndCut, searchGraph
+    from cosa.graph.functions import traverse, loadGraph
 
-    nodeA = createQueryNode('flying drone quadcopter')
-    nodeB = createQueryNode('autonomous vehicle')
-    #pprint.pprint (nodeB)
+    print 'test'
+    g = loadGraph('../data/graph_entities.dict')
+    searchGraph('knitted jumper',g)
 
-    result = matchNodes(nodeA,nodeB)
-    print result
+
+
+
+
 
 def _search(text):
-    from cosa.search.functions import entities
-    from cosa.search.DBPedia import DBPedia
-    myDBPedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
-    entities(text, myDBPedia)
+    print 'Loading graph...'
+    g = loadGraph('../data/graph_entities.dict')
+    print 'Graph loaded.'
+    rs = ResultSet()
+    rs = searchGraph(text, g)
+
+    print '**************'
+    print 'Top 10 results by score'
+    rs.printTopScores(10);
+
+    print '**************'
+    print 'Top 10 results by normalised(by depth) score'
+    rs.printTopNScores(10);
+
     
 def main():
     if len(sys.argv) == 1:
