@@ -64,14 +64,16 @@ class Model:
         except UnicodeError:
             self.L.debug( "Skipping invalid string '%s', length %d bytes" % (term, len(term)))
             return {}
-
+        terms = {}
         try:
             terms = self._word2vec.findSynonyms(term, num)
         except UnicodeDecodeError:
             self.L.debug(  "unicode error on string '%s', length %d bytes" % (term, len(term)))
         except Exception as e:
+            #print e
             pass #print " - not found (exception)"
         except Error as r:
+            #print r
             pass #print " - error"
     
         terms = dict(terms)

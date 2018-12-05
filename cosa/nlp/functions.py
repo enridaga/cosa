@@ -27,7 +27,7 @@ def text2terms(text):
             lemma = lemmatiser.lemmatize(token[0].lower())
         keywords.append(enpos(lemma, token[1]))
     
-    print keywords
+    #print keywords
     return keywords
 
 def enpos(lemma, pos):
