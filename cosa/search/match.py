@@ -64,6 +64,6 @@ def matchEntities(queryEntities, nodeEntities):
 def matchNodes(queryNode, categoryNode):
     queryEntities = queryNode['entities']
     categoryEntities = categoryNode['entities']    
-    return matchEntities(queryEntities, nodeEntities)
+    return matchEntities(queryEntities, categoryEntities)
             
             

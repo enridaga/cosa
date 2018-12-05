@@ -3,6 +3,8 @@ from os.path import dirname, join, abspath
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from cosa.graph.functions import traverse, saveGraph, loadGraph
 from cosa.dbpedia.DBPedia import DBPedia
+from cosa.search.match import matchNodes
+from cosa.search.ResultSet import ResultSet
 
 # dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
 def entities(input, dbpedia):
@@ -70,34 +72,53 @@ def sortAndCut(queue,percentage):
     newLength = int(float(len(sortedList)) * (float(percentage)/100))
     return sortedList[:newLength]
 
+def isLeaf(node):
+    if ('sub' in node):
+        if len(node['sub']) > 0:
+            return False
+        else:
+            return True
+    else:
+        return True
+
 def searchGraph(input, graph):
     qNode = createQueryNode(input)
     thisQ = []
     nextQ = []
-    model = Model(modelFile)
+    #model = Model(modelFile)
     rs = ResultSet()
+    currentDepth = 1
 
     #initially populate thisQ with graph root first layer subs
-    for sub in graph['subs']:
-        thisQ.append(graph['subs'][sub])
+    for sub in graph['sub']:
+        graph['sub'][sub]['depth'] = currentDepth
+        thisQ.append(graph['sub'][sub])
 
-    while (thisQ > 0) or (nextQ > 0):
-        while thisQ > 0:
+    while thisQ or nextQ:
+        print 'Processing queue. Depth: ', currentDepth
+        while thisQ:
             currentNode = thisQ.pop()
-            score = nodeMatch(qNode, currentNode)
+            score = matchNodes(qNode, currentNode)
             if 'parentScore' in currentNode:
                 score += currentNode['parentScore']
             currentNode['score'] = score
             if isLeaf(currentNode):
+                currentNode['nScore'] = currentNode['score'] / currentDepth
+                print 'collecting ',currentNode['code'], currentNode['score'], currentNode['nScore'], currentDepth
                 rs.collect(currentNode)
             else:
-                for sub in currentNode['subs']:
-                    currentNode['subs'][sub]['parentScore'] = score
-                    nextQ.append(currentNode['subs'][sub])
+                # push all subs to the next queue
+                for sub in currentNode['sub']:
+                    currentNode['sub'][sub]['parentScore'] = score
+                    currentNode['sub'][sub]['depth'] = currentDepth + 1
+                    nextQ.append(currentNode['sub'][sub])
+
 
         thisQ = sortAndCut(nextQ,50)
         nextQ = []
-
+        currentDepth += 1
+    print 'Items collected: ',rs.length()
+    return rs
 
 
 
