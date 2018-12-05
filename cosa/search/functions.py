@@ -81,7 +81,7 @@ def isLeaf(node):
     else:
         return True
 
-def searchGraph(input, graph):
+def searchGraph(input, graph, method, stop = 0):
     qNode = createQueryNode(input)
     thisQ = []
     nextQ = []
@@ -95,16 +95,16 @@ def searchGraph(input, graph):
         thisQ.append(graph['sub'][sub])
 
     while thisQ or nextQ:
-        print 'Processing queue. Depth: ', currentDepth
+        #print 'Processing queue. Depth: ', currentDepth
         while thisQ:
             currentNode = thisQ.pop()
-            score = matchNodes(qNode, currentNode)
+            score = matchNodes(qNode, currentNode, method)
             if 'parentScore' in currentNode:
                 score += currentNode['parentScore']
             currentNode['score'] = score
-            if isLeaf(currentNode):
+            if isLeaf(currentNode) or (currentDepth == stop):
                 currentNode['nScore'] = currentNode['score'] / currentDepth
-                print 'collecting ',currentNode['code'], currentNode['score'], currentNode['nScore'], currentDepth
+                #print 'collecting ',currentNode['code'], currentNode['score'], currentNode['nScore'], currentDepth
                 rs.collect(currentNode)
             else:
                 # push all subs to the next queue

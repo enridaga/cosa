@@ -5,6 +5,7 @@ sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from cosa.search.functions import createQueryNode, sortAndCut, searchGraph
 from cosa.graph.functions import traverse, loadGraph
 from cosa.search.ResultSet import ResultSet
+from cosa.nlp.Model import *
 
 def _test():
     import sys
@@ -21,6 +22,12 @@ def _search():
     print 'Loading graph...'
     g = loadGraph('../data/graph_entities.dict')
     print 'Graph loaded.'
+
+    print 'Loading model...'
+    model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
+
+    print 'Model loaded.'
+
     while(True):
         print 'Search:'
         text = sys.stdin.readline()
@@ -31,7 +38,10 @@ def _search():
             text = text[1]
         print 'Searching with method ' + method + '...'
         rs = ResultSet()
-        rs = searchGraph(text, g)
+        if method == 'terms':
+            rs = searchGraph(text, g, method, model, 1000)
+        else:
+            rs = searchGraph(text, g, method)
 
         print '**************'
         print 'Top 10 results by score'
