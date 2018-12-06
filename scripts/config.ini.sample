@@ -1,0 +1,4 @@
+; pip install --upgrade google-api-python-client oauth2client
+;
+[cosa]
+data.google.spreadsheetId=1AfwTH4fokwgbezKAYxOSy-I1gmvlf_g9LLbnz4FJoWo
