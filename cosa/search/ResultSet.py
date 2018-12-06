@@ -26,5 +26,24 @@ class ResultSet:
         if top == 0:
             top = len(self.results)
         for item in sortedList[:top]:
-            print item['code'], item['nScore'], item['depth'], item['label']
+            print item['code'], item['nScore'], item['depth']
         return True
+
+    def getResultsCodesList(self, top=0):
+        sortedList = sorted(self.results, key=itemgetter('nScore'), reverse=True)
+        returnList = []
+        if top == 0:
+            top = len(self.results)
+        for item in sortedList[:top]:
+            returnList.append(item['code'])
+        return returnList
+
+    def sortByNScore(self, top=0):
+        sortedList = sorted(self.results, key=itemgetter('nScore'), reverse=True)
+        position = 1
+        if top == 0:
+            top = len(self.results)
+        for item in sortedList[:top]:
+            item['position'] = position
+            position += 1
+        return sortedList

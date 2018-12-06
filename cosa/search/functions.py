@@ -51,19 +51,20 @@ def createQueryNode(input):
     node = prepareQueryNode(input)
     myDBPedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
     spotlight = myDBPedia.spotlight(input, 0.1)
-    for item in spotlight:
-        node['entities'][item] = {}
-        node['entities'][item]['score'] = spotlight[item]['score']
-        node['entities'][item]['types'] = []
-        node['entities'][item]['subjects'] = []
-        dbpSubjsTypes = myDBPedia.getSubjTypeURIs(item) #returns an array
-        for arrayItem in dbpSubjsTypes:
-            if arrayItem['type'] == 'S':
-                node['entities'][item]['subjects'].append(arrayItem['uri'])
-            elif arrayItem['type'] == 'T':
-                node['entities'][item]['types'].append(arrayItem['uri'])
-            else:
-                pass #it wasn't a 'subject' or 'Type', something went wrong
+    if spotlight:
+        for item in spotlight:
+            node['entities'][item] = {}
+            node['entities'][item]['score'] = spotlight[item]['score']
+            node['entities'][item]['types'] = []
+            node['entities'][item]['subjects'] = []
+            dbpSubjsTypes = myDBPedia.getSubjTypeURIs(item) #returns an array
+            for arrayItem in dbpSubjsTypes:
+                if arrayItem['type'] == 'S':
+                    node['entities'][item]['subjects'].append(arrayItem['uri'])
+                elif arrayItem['type'] == 'T':
+                    node['entities'][item]['types'].append(arrayItem['uri'])
+                else:
+                    pass #it wasn't a 'subject' or 'Type', something went wrong
     return node
 
 def sortAndCut(queue,percentage):
@@ -82,7 +83,7 @@ def isLeaf(node):
         return True
 
 def searchGraph(input, graph, method, model, stop = 0):
-    qNode = createQueryNode(input)
+    qNode = createQueryNode(unicode(input, 'utf-8'))
     thisQ = []
     nextQ = []
     #model = Model(modelFile)
