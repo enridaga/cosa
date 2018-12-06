@@ -48,7 +48,10 @@ def __matchEntities(queryEntities, nodeEntities, key):
             nentss = set(nentity[key])
             uentss = qentss.union(nentss)
             ientss = qentss.intersection(nentss)
-            score = ((float(len(ientss)) / float(len(uentss))) * nscore * qscore)
+            if len(uentss) == 0:
+                score = 0
+            else:
+                score = ((float(len(ientss)) / float(len(uentss))) * nscore * qscore)
             entsScore += score
     return entsScore
 
