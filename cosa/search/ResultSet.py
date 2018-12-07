@@ -26,7 +26,7 @@ class ResultSet:
         if top == 0:
             top = len(self.results)
         for item in sortedList[:top]:
-            print item['code'], item['nScore'], item['depth']
+            print item['code'], item['nScore'], item['depth'], item['label']
         return True
 
     def getResultsCodesList(self, top=0):

@@ -47,6 +47,7 @@ def prepareQueryNode(input):
             term: 1.0
         }
     return node
+
  
 def createQueryNode(input):
     from cosa.dbpedia.DBPedia import DBPedia
@@ -82,9 +83,10 @@ def createQueryNode(input):
             node['entities'][item]['subjects'] = list(set(node['entities'][item]['subjects']))
     return node
 
-def sortAndCut(queue,percentage):
+def sortAndCut(queue,percentage,field):
     from operator import itemgetter
-    sortedList = sorted(queue, key=itemgetter('parentScore'),reverse=True)
+    #sortedList = sorted(queue, key=itemgetter('parentScore'),reverse=True)
+    sortedList = sorted(queue, key=itemgetter(field),reverse=True)
     newLength = int(float(len(sortedList)) * (float(percentage)/100))
     return sortedList[:newLength]
 
@@ -97,9 +99,13 @@ def isLeaf(node):
     else:
         return True
 
-def searchGraph(input, graph, method, model, stop = 0):
+def searchGraph(input, graph, method, model, cutPercent, stop = 0):
     qNode = createQueryNode(unicode(input, 'utf-8'))
+    #import pprint
+    #pprint.pprint (qNode)
     thisQ = []
+    thisQScored = []
+    thisQScoredSorted = []
     nextQ = []
     #model = Model(modelFile)
     rs = ResultSet()
@@ -118,6 +124,11 @@ def searchGraph(input, graph, method, model, stop = 0):
             if 'parentScore' in currentNode:
                 score += currentNode['parentScore']
             currentNode['score'] = score
+            thisQScored.append(currentNode)
+
+        thisQScoredSorted = sortAndCut(thisQScored,cutPercent,'score')
+        while thisQScoredSorted:
+            currentNode = thisQScoredSorted.pop()
             if isLeaf(currentNode) or (currentDepth == stop):
                 currentNode['nScore'] = currentNode['score'] / currentDepth
                 #print 'collecting ',currentNode['code'], currentNode['score'], currentNode['nScore'], currentDepth
@@ -130,29 +141,9 @@ def searchGraph(input, graph, method, model, stop = 0):
                     nextQ.append(currentNode['sub'][sub])
 
 
-        thisQ = sortAndCut(nextQ,50)
+        thisQ = list(nextQ)
+        thisQScored = []
         nextQ = []
         currentDepth += 1
     print 'Items collected: ',rs.length()
     return rs
-
-
-
-
-
-
-
-
-
-
-
-def addNodeToQueryGraph():
-    return True
-
-def createQueryGraph():
-    return True
-
-
-
-def testFunction():
-    print ("Hello")

@@ -154,7 +154,7 @@ def _runTest(inputFile, graphFile, outputFile):
                     '''
                     rs = ResultSet()
                     model = None
-                    rs = searchGraph(textSanitized, g, 'entities', model)
+                    rs = searchGraph(textSanitized, g, 'subjects', model, 50)
                     print '**************'
                     print code, textSanitized
                     #print 'Top 10 results by normalised(by depth) score'
