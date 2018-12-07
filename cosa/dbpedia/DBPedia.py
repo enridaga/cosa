@@ -42,17 +42,31 @@ class DBPedia:
       '''
 
 
-
-  #Does a full request and returns the raw result
-  def dbpediaEndpointRequest(self, inputURI):
+  def dbpediaEndpointRequest(self, query):
       url = self.dbpediaEndpoint
       headers = {'Accept': 'application/json'}
-      sparqlQuery = ' \
+      params = {'query': query}
+
+      resp = requests.get(url=url, params=params, headers=headers)
+      return resp.json()  # parse the JSON and return as a Python dict.
+
+  def dbpediaCategoriesTransitive(self, category):
+      sparqlQuery = '\
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \
+SELECT distinct ?category WHERE { \
+  <http://dbpedia.org/resource/Category:Reptiles_of_South_America> skos:broader{,10} ?category \
+}'
+      return self.dbpediaEndpointRequest(sparqlQuery)
+      
+
+  #Does a full request and returns the raw result
+  def dbpediaRequestEntities(self, inputURI):
+    sparqlQuery = ' \
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \
 PREFIX dct: <http://purl.org/dc/terms/> \
-SELECT ?obj ?T WHERE { \
+SELECT distinct ?obj ?T WHERE { \
   { \
   <' + inputURI + '> dct:subject ?obj . \
     bind("S" as ?T) \
@@ -83,18 +97,13 @@ SELECT ?obj ?T WHERE { \
         bind("T" as ?T) \
   } \
 }'
-
-
-      params = {'query': sparqlQuery}
-
-      resp = requests.get(url=url, params=params, headers=headers)
-      return resp.json()  # parse the JSON and return as a Python dict.
+    return self.dbpediaEndpointRequest(sparqlQuery)
 
   #Abstraction of dbpediaEndpointRequest(), just returns simplified Subject and Type URIs
   #USE THIS FOR MOST USES
   def getSubjTypeURIs(self,inputURI):
       returnArray = []
-      fullResponse = self.dbpediaEndpointRequest(inputURI)
+      fullResponse = self.dbpediaRequestEntities(inputURI)
       try:
           bindings = fullResponse['results']['bindings']
           for binding in bindings:
@@ -110,7 +119,7 @@ SELECT ?obj ?T WHERE { \
   #just get the Subject URIs
   def getSubjURIs(self, inputURI):
       returnArray = []
-      fullResponse = self.dbpediaEndpointRequest(inputURI)
+      fullResponse = self.dbpediaRequestEntities(inputURI)
       try:
           bindings = fullResponse['results']['bindings']
           for binding in bindings:
@@ -127,7 +136,7 @@ SELECT ?obj ?T WHERE { \
   #Just get the type URIs
   def getTypeURIs(self, inputURI):
       returnArray = []
-      fullResponse = self.dbpediaEndpointRequest(inputURI)
+      fullResponse = self.dbpediaRequestEntities(inputURI)
       try:
           bindings = fullResponse['results']['bindings']
           for binding in bindings:

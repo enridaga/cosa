@@ -7,13 +7,12 @@ from cosa.search.match import matchNodes
 from cosa.search.ResultSet import ResultSet
 
 # dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
-def entities(input, dbpedia):
+def entities(input, dbpedia, confidence = 0.1):
     from cosa.dbpedia.DBPedia import DBPedia
-    spotlight = dbpedia.spotlight(input, 0.1)
+    spotlight = dbpedia.spotlight(input, confidence)
     entities = {}
 
     #if no entities returned (eg root node), just return empty entities dict
-
     for item in spotlight or []:
         entities[item] = {}
         entities[item]['score'] = spotlight[item]['score']
@@ -27,6 +26,10 @@ def entities(input, dbpedia):
                 entities[item]['types'].append(arrayItem['uri'])
             else:
                 pass #it wasn't a 'subject' or 'Type', something went wrong
+            
+        entities[item]['types'] = list(set(entities[item]['types']))
+        entities[item]['subjects'] = list(set(entities[item]['subjects']))
+
     return entities
     
 
@@ -44,7 +47,7 @@ def prepareQueryNode(input):
             term: 1.0
         }
     return node
-            
+ 
 def createQueryNode(input):
     from cosa.dbpedia.DBPedia import DBPedia
     from cosa.nlp.functions import text2terms
@@ -60,11 +63,23 @@ def createQueryNode(input):
             dbpSubjsTypes = myDBPedia.getSubjTypeURIs(item) #returns an array
             for arrayItem in dbpSubjsTypes:
                 if arrayItem['type'] == 'S':
-                    node['entities'][item]['subjects'].append(arrayItem['uri'])
+                    # Expand on subject
+                    subject = arrayItem['uri']
+                    expanded = myDBPedia.dbpediaCategoriesTransitive(subject)
+                    subjectsArray = [subject]
+                    try:
+                        bindings = expanded['results']['bindings']
+                        for binding in bindings:
+                            subjectsArray.append(binding['category']['value'])
+                            #print 'Category: ', binding['obj']['value']
+                    except KeyError:
+                        pass
+                    node['entities'][item]['subjects'].extend(subjectsArray)
                 elif arrayItem['type'] == 'T':
                     node['entities'][item]['types'].append(arrayItem['uri'])
                 else:
                     pass #it wasn't a 'subject' or 'Type', something went wrong
+            node['entities'][item]['subjects'] = list(set(node['entities'][item]['subjects']))
     return node
 
 def sortAndCut(queue,percentage,field):
