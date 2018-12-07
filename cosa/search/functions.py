@@ -67,9 +67,10 @@ def createQueryNode(input):
                     pass #it wasn't a 'subject' or 'Type', something went wrong
     return node
 
-def sortAndCut(queue,percentage):
+def sortAndCut(queue,percentage,field):
     from operator import itemgetter
-    sortedList = sorted(queue, key=itemgetter('parentScore'),reverse=True)
+    #sortedList = sorted(queue, key=itemgetter('parentScore'),reverse=True)
+    sortedList = sorted(queue, key=itemgetter(field),reverse=True)
     newLength = int(float(len(sortedList)) * (float(percentage)/100))
     return sortedList[:newLength]
 
@@ -82,7 +83,58 @@ def isLeaf(node):
     else:
         return True
 
-def searchGraph(input, graph, method, model, stop = 0):
+def searchGraph(input, graph, method, model, cutPercent, stop = 0):
+    qNode = createQueryNode(unicode(input, 'utf-8'))
+    thisQ = []
+    thisQScored = []
+    thisQScoredSorted = []
+    nextQ = []
+    #model = Model(modelFile)
+    rs = ResultSet()
+    currentDepth = 1
+
+    #initially populate thisQ with graph root first layer subs
+    for sub in graph['sub']:
+        graph['sub'][sub]['depth'] = currentDepth
+        thisQ.append(graph['sub'][sub])
+
+    while thisQ or nextQ:
+        #print 'Processing queue. Depth: ', currentDepth
+        while thisQ:
+            currentNode = thisQ.pop()
+            score = matchNodes(qNode, currentNode, method, model)
+            if 'parentScore' in currentNode:
+                score += currentNode['parentScore']
+            currentNode['score'] = score
+            thisQScored.append(currentNode)
+
+        thisQScoredSorted = sortAndCut(thisQScored,cutPercent,'score')
+        while thisQScoredSorted:
+            currentNode = thisQScoredSorted.pop()
+            if isLeaf(currentNode) or (currentDepth == stop):
+                currentNode['nScore'] = currentNode['score'] / currentDepth
+                #print 'collecting ',currentNode['code'], currentNode['score'], currentNode['nScore'], currentDepth
+                rs.collect(currentNode)
+            else:
+                # push all subs to the next queue
+                for sub in currentNode['sub']:
+                    currentNode['sub'][sub]['parentScore'] = score
+                    currentNode['sub'][sub]['depth'] = currentDepth + 1
+                    nextQ.append(currentNode['sub'][sub])
+
+
+        thisQ = list(nextQ)
+        thisQScored = []
+        nextQ = []
+        currentDepth += 1
+    print 'Items collected: ',rs.length()
+    return rs
+
+'''
+*** THIS searchGraph method is using an incorrect method for cutting the results at each level
+*** No longer used but saved here for reference
+'''
+def searchGraphOld(input, graph, method, model, cutPercent, stop = 0):
     qNode = createQueryNode(unicode(input, 'utf-8'))
     thisQ = []
     nextQ = []
@@ -115,16 +167,11 @@ def searchGraph(input, graph, method, model, stop = 0):
                     nextQ.append(currentNode['sub'][sub])
 
 
-        thisQ = sortAndCut(nextQ,50)
+        thisQ = sortAndCut(nextQ,cutPercent,'parentScore')
         nextQ = []
         currentDepth += 1
     print 'Items collected: ',rs.length()
     return rs
-
-
-
-
-
 
 
 
