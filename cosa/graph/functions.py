@@ -106,4 +106,11 @@ def traverse(node, callback):
         for sub in node['sub']:
             traverse(node['sub'][sub], callback)
         
+def lookup(node, callback):
+    res = callback(node)
+    if res == True and 'sub' in node:
+        for sub in node['sub']:
+            res = lookup(node['sub'][sub], callback)
+    return res        
+      
 
