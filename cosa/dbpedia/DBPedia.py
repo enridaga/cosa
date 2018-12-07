@@ -54,7 +54,7 @@ class DBPedia:
       sparqlQuery = '\
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \
 SELECT distinct ?category WHERE { \
-  <http://dbpedia.org/resource/Category:Reptiles_of_South_America> skos:broader{,10} ?category \
+  <' + category + '> skos:broader{,10} ?category \
 }'
       return self.dbpediaEndpointRequest(sparqlQuery)
       
