@@ -47,6 +47,7 @@ def prepareQueryNode(input):
             term: 1.0
         }
     return node
+
  
 def createQueryNode(input):
     from cosa.dbpedia.DBPedia import DBPedia
