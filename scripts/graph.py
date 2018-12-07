@@ -37,10 +37,8 @@ def _dbpedia(input, output):
     traverse(g, populate)
     saveGraph(g, output)
 
-def _removeDupEntities(inout, output):
-    rom
-    cosa.graph.functions
-    import traverse, saveGraph, loadGraph
+def _removeDupEntities(input, output):
+    from cosa.graph.functions import traverse, saveGraph, loadGraph
     from cosa.search.functions import entities
     from cosa.dbpedia.DBPedia import DBPedia
     dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
@@ -48,8 +46,8 @@ def _removeDupEntities(inout, output):
     def removeDups(n):
         if 'entities' in n:
             for resource in n['entities']:
-                resource['subjects'] = list(set(resource['subjects']))
-                resource['types'] = list(set(resource['types']))
+                n['entities'][resource]['subjects'] = list(set(n['entities'][resource]['subjects']))
+                n['entities'][resource]['types'] = list(set(n['entities'][resource]['types']))
             print n['code']
     traverse(g, removeDups)
     saveGraph(g, output)
