@@ -64,6 +64,8 @@ def createQueryNode(input):
             dbpSubjsTypes = myDBPedia.getSubjTypeURIs(item) #returns an array
             for arrayItem in dbpSubjsTypes:
                 if arrayItem['type'] == 'S':
+                    node['entities'][item]['subjects'].append(arrayItem['uri'])
+                    '''
                     # Expand on subject
                     subject = arrayItem['uri']
                     expanded = myDBPedia.dbpediaCategoriesTransitive(subject)
@@ -76,6 +78,7 @@ def createQueryNode(input):
                     except KeyError:
                         pass
                     node['entities'][item]['subjects'].extend(subjectsArray)
+                    '''
                 elif arrayItem['type'] == 'T':
                     node['entities'][item]['types'].append(arrayItem['uri'])
                 else:

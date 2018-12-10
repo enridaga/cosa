@@ -131,6 +131,7 @@ SELECT distinct ?obj ?T WHERE { \
               # print 'Category: ', binding['obj']['value']
       except KeyError:
           pass
+      returnArray = list(set(returnArray))
       return returnArray
 
   #Just get the type URIs

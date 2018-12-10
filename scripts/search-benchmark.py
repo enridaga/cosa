@@ -79,6 +79,8 @@ def _runTest(inputFile, graphFile, outputFile):
     print 'Loading graph...'
     g = loadGraph(graphFile)
     print 'Graph loaded.'
+    print 'Loading model...'
+    model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
 
     processLog = []
 
@@ -153,8 +155,8 @@ def _runTest(inputFile, graphFile, outputFile):
                     #####################
                     '''
                     rs = ResultSet()
-                    model = None
-                    rs = searchGraph(textSanitized, g, 'subjects', model, 50)
+                    #model = None
+                    rs = searchGraph(textSanitized, g, 'terms', model, 50, 1)
                     print '**************'
                     print code, textSanitized
                     #print 'Top 10 results by normalised(by depth) score'
