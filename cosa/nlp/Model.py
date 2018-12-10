@@ -46,7 +46,7 @@ class Model:
         try:
             self._word2vec = Word2VecModel.load(sc, modelFile)
         except Exception as e:
-            L.error( "Exiting: " + str(e))
+            self.L.error( "Exiting: " + str(e))
             sc.stop()
             exit()
 
