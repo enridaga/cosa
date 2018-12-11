@@ -6,35 +6,40 @@ import sys
 import time
 
 """Returns a double"""
-def matchTerms(queryLabel, nodeLabel, model, number):
-    start_time = time.time()
+def matchTexts(queryLabel, nodeLabel, model, number):
+    #start_time = time.time()
     # Get terms from query
     q = text2terms (queryLabel)
     t = text2terms (nodeLabel)
+    return matchTerms(q,t, model, number)
+
+modelCache = {}
+
+def matchTerms(queryTerms, nodeTerms, model, number):
+    #start_time = time.time()
+    # Get terms from query
+    q = queryTerms
+    t = nodeTerms
     qsize = len(q)
     nsize = len(t)
     tfreq = 0.0
-    this_time = time.time()    
-    print "terms calculated", str(this_time - start_time)
-    
+    #this_time = time.time()    
+    #print "terms calculated", str(this_time - start_time)
+    global modelCache
     for ttt in t:
-        dic = model.similarToTerm(ttt, number)
+        if ttt in modelCache:
+            dic = modelCache[ttt]
+        else:
+            dic = model.similarToTerm(ttt, number)
+            modelCache[ttt] = dic
         for qt in q:
             if not isinstance(qt, unicode):
                 qt = unicode(qt, "utf-8")
             if qt in dic:
                 tfreq += dic[qt]
-    
-    this_time2 = time.time()    
-    print "freq calculated", str(this_time2 - this_time)
-    
     # Formula
     score = ((tfreq / nsize) + (tfreq / qsize)) / 2
-    this_time3 = time.time()    
-    print "score calculated", str(this_time3 - this_time2)
-    
     return score
-
 
 def __matchEntities(queryEntities, nodeEntities, key):
     entsScore = 0.0;
@@ -78,6 +83,16 @@ def matchNodes(queryNode, categoryNode, method = 'entities', model = None, embed
         categoryEntities = categoryNode['entities']    
         return matchSubjects(queryEntities, categoryEntities)
     elif method == 'terms':
-        return matchTerms(queryNode['label'], categoryNode['label'], model, embeddings)        
+        if 'terms' in queryNode:
+            qt = queryNode['terms']
+        else:
+            qt = text2terms(queryNode['label'])
+            queryNode['terms'] = qt
+        if 'terms' in categoryNode:
+            ct = categoryNode['terms']
+        else:
+            ct = text2terms(categoryNode['label'])
+            categoryNode['terms'] = ct
+        return matchTerms(qt, ct, model, embeddings)        
     else:
         raise ValueError('Unknown method: ' + method)    

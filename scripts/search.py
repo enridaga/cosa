@@ -24,8 +24,8 @@ def _search():
     print 'Graph loaded.'
 
     print 'Loading model...'
-    model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
-    #model = Model('/Users/ed4565/Development/led-discovery/data/analysis/gutenberg2vec/word2vec.model')
+    #model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
+    model = Model('/Users/ed4565/Development/led-discovery/data/analysis/gutenberg2vec/word2vec.model')
     
     print 'Model loaded.'
 

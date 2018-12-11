@@ -85,9 +85,6 @@ SELECT distinct ?obj ?T ?L WHERE { \
     ?something dct:subject/skos:broader/skos:broader ?obj . \
     bind("S" as ?T) \
     bind("3" as ?L) \
-  } UNION { \
-  <' + inputURI + '> rdf:type ?obj . \
-        bind("T" as ?T) \
   } \
 }'
     return self.dbpediaEndpointRequest(sparqlQuery)
@@ -102,11 +99,10 @@ SELECT distinct ?obj ?T ?L WHERE { \
               singleItem = {}
               singleItem['uri'] = binding['obj']['value']
               singleItem['type'] = binding['T']['value']
-              if singleItem['type'] == 'S':
-                returnArray.append(singleItem)
-              # print 'Category: ', binding['obj']['value']
-      except KeyError:
+              singleItem['distance'] = binding['L']['value']
+              returnArray.append(singleItem)
+      except KeyError as e:
+          print e
           pass
-      returnArray = list(set(returnArray))
       return returnArray
 

@@ -106,15 +106,17 @@ def searchGraph(input, graph, method, model, cutPercent, stop = 0):
         thisQ.append(graph['sub'][sub])
 
     while thisQ or nextQ:
-        #print 'Processing queue. Depth: ', currentDepth
+        print ''
+        sys.stdout.write('Processing queue. Depth: ' + str(currentDepth) + ' ')
         while thisQ:
+            sys.stdout.write('.')
+            sys.stdout.flush()
             currentNode = thisQ.pop()
             score = matchNodes(qNode, currentNode, method, model)
             if 'parentScore' in currentNode:
                 score += currentNode['parentScore']
             currentNode['score'] = score
             thisQScored.append(currentNode)
-
         thisQScoredSorted = sortAndCut(thisQScored,cutPercent,'score')
         while thisQScoredSorted:
             currentNode = thisQScoredSorted.pop()
@@ -128,8 +130,6 @@ def searchGraph(input, graph, method, model, cutPercent, stop = 0):
                     currentNode['sub'][sub]['parentScore'] = score
                     currentNode['sub'][sub]['depth'] = currentDepth + 1
                     nextQ.append(currentNode['sub'][sub])
-
-
         thisQ = list(nextQ)
         thisQScored = []
         nextQ = []
