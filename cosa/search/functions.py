@@ -18,7 +18,7 @@ def entities(input, dbpedia, confidence = 0.1):
         entities[item]['score'] = spotlight[item]['score']
         entities[item]['types'] = []
         entities[item]['subjects'] = []
-        dbpSubjsTypes = dbpedia.getSubjTypeURIs(item) #returns an array
+        dbpSubjsTypes = dbpedia.getSubjURIs(item) #returns an array
         for arrayItem in dbpSubjsTypes:
             if arrayItem['type'] == 'S':
                 entities[item]['subjects'].append(arrayItem['uri'])
@@ -61,24 +61,10 @@ def createQueryNode(input):
             node['entities'][item]['score'] = spotlight[item]['score']
             node['entities'][item]['types'] = []
             node['entities'][item]['subjects'] = []
-            dbpSubjsTypes = myDBPedia.getSubjTypeURIs(item) #returns an array
+            dbpSubjsTypes = myDBPedia.getSubjURIs(item) #returns an array
             for arrayItem in dbpSubjsTypes:
                 if arrayItem['type'] == 'S':
                     node['entities'][item]['subjects'].append(arrayItem['uri'])
-                    '''
-                    # Expand on subject
-                    subject = arrayItem['uri']
-                    expanded = myDBPedia.dbpediaCategoriesTransitive(subject)
-                    subjectsArray = [subject]
-                    try:
-                        bindings = expanded['results']['bindings']
-                        for binding in bindings:
-                            subjectsArray.append(binding['category']['value'])
-                            #print 'Category: ', binding['obj']['value']
-                    except KeyError:
-                        pass
-                    node['entities'][item]['subjects'].extend(subjectsArray)
-                    '''
                 elif arrayItem['type'] == 'T':
                     node['entities'][item]['types'].append(arrayItem['uri'])
                 else:
