@@ -66,28 +66,34 @@ PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \
 PREFIX dct: <http://purl.org/dc/terms/> \
-SELECT distinct ?obj ?T WHERE { \
+SELECT distinct ?obj ?T ?L WHERE { \
   { \
   <' + inputURI + '> dct:subject ?obj . \
     bind("S" as ?T) \
+    bind("1" as ?L) \
   } UNION { \
   <' + inputURI + '> dct:subject/skos:broader ?obj . \
     bind("S" as ?T) \
+    bind("2" as ?L) \
   } UNION { \
   <' + inputURI + '> dct:subject/skos:broader/skos:broader ?obj . \
     bind("S" as ?T) \
+    bind("3" as ?L) \
   } UNION { \
   <' + inputURI + '> <http://dbpedia.org/ontology/wikiPageRedirects> ?something . \
     ?something dct:subject ?obj . \
     bind("S" as ?T) \
+    bind("1" as ?L) \
   } UNION { \
   <' + inputURI + '> <http://dbpedia.org/ontology/wikiPageRedirects> ?something . \
     ?something dct:subject/skos:broader ?obj . \
     bind("S" as ?T) \
+    bind("2" as ?L) \
   } UNION { \
   <' + inputURI + '> <http://dbpedia.org/ontology/wikiPageRedirects> ?something .  \
     ?something dct:subject/skos:broader/skos:broader ?obj . \
     bind("S" as ?T) \
+    bind("3" as ?L) \
   } UNION { \
   <' + inputURI + '> rdf:type ?obj . \
         bind("T" as ?T) \
