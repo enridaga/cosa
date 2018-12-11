@@ -79,6 +79,27 @@ def sortAndCut(queue,percentage,field):
     newLength = int(float(len(sortedList)) * (float(percentage)/100))
     return sortedList[:newLength]
 
+def sortAndCutOnScore(queue,percentage,field):
+    from operator import itemgetter
+    sortedList = sorted(queue, key=itemgetter(field),reverse=True)
+    topScore = float(sortedList[0][field])
+    bottomScore = float(sortedList[len(sortedList)-1][field])
+    cutScore = topScore - ((topScore - bottomScore) * (float(percentage)/100))
+    cutIndex = 0
+    print 'Top score:',topScore
+    print 'Bottom score:',bottomScore
+    print 'Cut score:',cutScore
+    index = 0
+    for item in sortedList:
+        if float(item[field]) < cutScore:
+            cutIndex = index
+            break
+        index += 1
+    #newLength = int(float(len(sortedList)) * (float(percentage)/100))
+    newLength = cutIndex
+    print 'Cut index:',cutIndex
+    return sortedList[:newLength]
+
 def isLeaf(node):
     if ('sub' in node):
         if len(node['sub']) > 0:
@@ -117,7 +138,8 @@ def searchGraph(input, graph, method, model, cutPercent, stop = 0):
                 score += currentNode['parentScore']
             currentNode['score'] = score
             thisQScored.append(currentNode)
-        thisQScoredSorted = sortAndCut(thisQScored,cutPercent,'score')
+        #thisQScoredSorted = sortAndCut(thisQScored,cutPercent,'score')
+        thisQScoredSorted = sortAndCutOnScore(thisQScored,cutPercent,'score')
         while thisQScoredSorted:
             currentNode = thisQScoredSorted.pop()
             if isLeaf(currentNode) or (currentDepth == stop):

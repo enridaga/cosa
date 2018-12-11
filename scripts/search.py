@@ -24,8 +24,8 @@ def _search():
     print 'Graph loaded.'
 
     print 'Loading model...'
-    #model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
-    model = Model('/Users/ed4565/Development/led-discovery/data/analysis/gutenberg2vec/word2vec.model')
+    model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
+    #model = Model('/Users/ed4565/Development/led-discovery/data/analysis/gutenberg2vec/word2vec.model')
     
     print 'Model loaded.'
 
@@ -41,9 +41,9 @@ def _search():
             print 'Searching with method ' + method + '...'
             rs = ResultSet()
             if method == 'terms':
-                rs = searchGraph(text, g, method, model, 50)
+                rs = searchGraph(text, g, method, model, 50, 0)
             else:
-                rs = searchGraph(text, g, method, None, 50)
+                rs = searchGraph(text, g, method, None, 50, 0)
 
             #print '**************'
             #print 'Top 10 results by score'
