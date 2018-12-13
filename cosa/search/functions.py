@@ -122,7 +122,7 @@ def searchGraph(input, graph, method, model, cutPercent, stop = 0):
     nextQ = []
     rs = ResultSet()
     currentDepth = 1
-    score = 0.0
+    #score = 0.0
 
     #initially populate thisQ with graph root first layer subs
     for sub in graph['sub']:
