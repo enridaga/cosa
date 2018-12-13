@@ -16,19 +16,19 @@ def entities(input, dbpedia, confidence = 0.1):
     for item in spotlight or []:
         entities[item] = {}
         entities[item]['score'] = spotlight[item]['score']
-        entities[item]['types'] = []
-        entities[item]['subjects'] = []
+        entities[item]['types'] = {}
+        entities[item]['subjects'] = {}
         dbpSubjsTypes = dbpedia.getSubjURIs(item) #returns an array
         for arrayItem in dbpSubjsTypes:
             if arrayItem['type'] == 'S':
-                entities[item]['subjects'].append(arrayItem['uri'])
+                entities['entities'][item]['subjects'][arrayItem['uri']] = arrayItem['distance']
             elif arrayItem['type'] == 'T':
-                entities[item]['types'].append(arrayItem['uri'])
+                entities['entities'][item]['types'][arrayItem['uri']] = arrayItem['distance']
             else:
                 pass #it wasn't a 'subject' or 'Type', something went wrong
             
-        entities[item]['types'] = list(set(entities[item]['types']))
-        entities[item]['subjects'] = list(set(entities[item]['subjects']))
+        #entities[item]['types'] = list(set(entities[item]['types']))
+        #entities[item]['subjects'] = list(set(entities[item]['subjects']))
 
     return entities
     
@@ -59,17 +59,24 @@ def createQueryNode(input):
         for item in spotlight:
             node['entities'][item] = {}
             node['entities'][item]['score'] = spotlight[item]['score']
-            node['entities'][item]['types'] = []
-            node['entities'][item]['subjects'] = []
-            dbpSubjsTypes = myDBPedia.getSubjURIs(item) #returns an array
+            node['entities'][item]['types'] = {}
+            node['entities'][item]['subjects'] = {}
+            dbpSubjsTypes = myDBPedia.getSubjURIs(item) #returns an array of dictionaries {'uri':<uri>,'type':<type>,{distance':<distance>}
             for arrayItem in dbpSubjsTypes:
                 if arrayItem['type'] == 'S':
-                    node['entities'][item]['subjects'].append(arrayItem['uri'])
+                    #singleItem = {}
+                    #singleItem[arrayItem['uri']] = arrayItem['distance']
+                    #node['entities'][item]['subjects'].append(singleItem)
+                    node['entities'][item]['subjects'][arrayItem['uri']] = arrayItem['distance']
                 elif arrayItem['type'] == 'T':
-                    node['entities'][item]['types'].append(arrayItem['uri'])
+                    #singleItem = {}
+                    #singleItem[arrayItem['uri']] = arrayItem['distance']
+                    #node['entities'][item]['types'].append(singleItem)
+                    node['entities'][item]['types'][arrayItem['uri']] = arrayItem['distance']
                 else:
                     pass #it wasn't a 'subject' or 'Type', something went wrong
-            node['entities'][item]['subjects'] = list(set(node['entities'][item]['subjects']))
+            #SELECT DISTINCT should render the following redundant
+            #node['entities'][item]['subjects'] = list(set(node['entities'][item]['subjects']))
     return node
 
 def sortAndCut(queue,percentage,field):
@@ -85,19 +92,17 @@ def sortAndCutOnScore(queue,percentage,field):
     topScore = float(sortedList[0][field])
     bottomScore = float(sortedList[len(sortedList)-1][field])
     cutScore = topScore - ((topScore - bottomScore) * (float(percentage)/100))
-    cutIndex = 0
     print 'Top score:',topScore
     print 'Bottom score:',bottomScore
     print 'Cut score:',cutScore
     index = 0
     for item in sortedList:
-        if float(item[field]) < cutScore:
-            cutIndex = index
-            break
         index += 1
+        if float(item[field]) < cutScore:
+            break
     #newLength = int(float(len(sortedList)) * (float(percentage)/100))
-    newLength = cutIndex
-    print 'Cut index:',cutIndex
+    newLength = index
+    print 'Cut index:',index
     return sortedList[:newLength]
 
 def isLeaf(node):
@@ -111,15 +116,13 @@ def isLeaf(node):
 
 def searchGraph(input, graph, method, model, cutPercent, stop = 0):
     qNode = createQueryNode(unicode(input, 'utf-8'))
-    #import pprint
-    #pprint.pprint (qNode)
     thisQ = []
     thisQScored = []
     thisQScoredSorted = []
     nextQ = []
-    #model = Model(modelFile)
     rs = ResultSet()
     currentDepth = 1
+    score = 0.0
 
     #initially populate thisQ with graph root first layer subs
     for sub in graph['sub']:
@@ -133,10 +136,14 @@ def searchGraph(input, graph, method, model, cutPercent, stop = 0):
             sys.stdout.write('.')
             sys.stdout.flush()
             currentNode = thisQ.pop()
-            score = matchNodes(qNode, currentNode, method, model)
+            currentNode['localScore'] = matchNodes(qNode, currentNode, method, model)
+            #currentNode['localScore'] = score
             if 'parentScore' in currentNode:
-                score += currentNode['parentScore']
-            currentNode['score'] = score
+                currentNode['score'] = currentNode['parentScore'] + currentNode['localScore']
+            else:
+                currentNode['parentScore'] = 0.0
+                currentNode['score'] = currentNode['parentScore'] + currentNode['localScore']
+            #currentNode['score'] = score
             thisQScored.append(currentNode)
         #thisQScoredSorted = sortAndCut(thisQScored,cutPercent,'score')
         thisQScoredSorted = sortAndCutOnScore(thisQScored,cutPercent,'score')
@@ -144,12 +151,14 @@ def searchGraph(input, graph, method, model, cutPercent, stop = 0):
             currentNode = thisQScoredSorted.pop()
             if isLeaf(currentNode) or (currentDepth == stop):
                 currentNode['nScore'] = currentNode['score'] / currentDepth
-                #print 'collecting ',currentNode['code'], currentNode['score'], currentNode['nScore'], currentDepth
-                rs.collect(currentNode)
+                print 'collecting ',currentNode['code'], currentNode['localScore'], currentNode['score'], currentNode['nScore'], currentDepth
+                #don't collect items with zero score...
+                if currentNode['nScore'] > 0:
+                    rs.collect(currentNode)
             else:
                 # push all subs to the next queue
                 for sub in currentNode['sub']:
-                    currentNode['sub'][sub]['parentScore'] = score
+                    currentNode['sub'][sub]['parentScore'] = currentNode['parentScore'] + currentNode['localScore']
                     currentNode['sub'][sub]['depth'] = currentDepth + 1
                     nextQ.append(currentNode['sub'][sub])
         thisQ = list(nextQ)

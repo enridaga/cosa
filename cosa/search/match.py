@@ -41,6 +41,32 @@ def matchTerms(queryTerms, nodeTerms, model, number):
     score = ((tfreq / nsize) + (tfreq / qsize)) / 2
     return score
 
+def __weightedSize(entitySet):
+    total = 0.0
+    #print list(entitySet)
+    for item in entitySet:
+        #print item
+        total += 1.0 / float(entitySet[item])
+    return total
+
+def __intersection(qents,nents):
+    size = 0.0
+    for qek in qents:
+        for nek in nents:
+            if qek == nek:
+                '''
+                qents[qek] = a = query item distance
+                nents[qek] = b = catalogue node item distance
+                significance of q item = 1/a
+                significance of n item = 1/b
+                (1/a + 1/b) / 2 = 1/(2a) + 1/(2b)
+                '''
+                a = float(qents[qek])
+                b = float(nents[nek])
+                factor = (1/(2 * a)) + (1/(2 * b))
+                size += 1.0 * factor
+    return size
+
 def __matchEntities(queryEntities, nodeEntities, key):
     entsScore = 0.0;
     for qek in queryEntities:
@@ -49,14 +75,34 @@ def __matchEntities(queryEntities, nodeEntities, key):
         for nek in nodeEntities:
             nentity = nodeEntities[nek]
             nscore = float(nentity['score'])
-            qentss = set(qentity[key])
-            nentss = set(nentity[key])
-            uentss = qentss.union(nentss)
-            ientss = qentss.intersection(nentss)
-            if len(uentss) == 0:
-                score = 0
+            #qentss = set(qentity[key])
+            #nentss = set(nentity[key])
+            #uentss = qentss.union(nentss)
+            #ientss = qentss.intersection(nentss)
+            '''
+            entity score = ( (wM/wQS) + (wM/wNS) ) / 2
+            (then all mutiplied by both the qEntitiy relevancy score and nEntity relevancy score)
+            where...
+                wM = weightedMatches (number of matches weighted for distance)
+                wQS = weighted size of total query node URIs
+                wNS = weighted size of total catalogue node URIs
+            '''
+            #score = ((float(len(ientss)) / float(len(uentss))) * nscore * qscore)
+            #score = ((float(len(ientss)) / float(len(uentss))) * nscore * qscore)
+            #score = (((__weightedSize(ientss)/__weightedSize(qentss)) + (__weightedSize(ientss)/__weightedSize(nentss))) / 2) * nscore * qscore
+            wM = __intersection(qentity[key],nentity[key])
+            wQS = __weightedSize(qentity[key])
+            wNS = __weightedSize(nentity[key])
+            if wQS > 0:
+                wMwQS = wM/wQS
             else:
-                score = ((float(len(ientss)) / float(len(uentss))) * nscore * qscore)
+                wMwQS = 0
+            if wNS > 0:
+                wMwNS = wM/wNS
+            else:
+                wMwNS = 0
+            score = ( ( wMwQS + wMwNS ) / 2 ) * nscore * qscore
+
             entsScore += score
     return entsScore
 
