@@ -41,24 +41,26 @@ def _search():
             print 'Searching with method ' + method + '...'
             rs = ResultSet()
             if method == 'terms':
-                rs = searchGraph(text, g, method, model, 50, 0)
+                rs = searchGraph(text, g, method, model, 95, 0)
             else:
-                rs = searchGraph(text, g, method, None, 50, 0)
+                rs = searchGraph(text, g, method, None, 95, 0)
 
-            #print '**************'
-            #print 'Top 10 results by score'
-            #rs.printTopScores(10);
+            print '**************'
+            print 'Top 10 results by score'
+            rs.printTopScores(10);
 
             print '**************'
             print 'Top 10 results by normalised(by depth) score'
             rs.printTopNScores(10);
+
         except Exception as e:
             print e
             pass #print " - not found (exception)"
         except Error as r:
             print r
             pass #print " - error"
-    
+
+
 def main():
     if len(sys.argv) == 1:
         exit(1)
