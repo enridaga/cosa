@@ -49,20 +49,33 @@ def prepareQueryNode(input):
         }
     return node
 
- 
+dbpCache = {}
+spotlightCache = {}
+
 def createQueryNode(input):
     from cosa.dbpedia.DBPedia import DBPedia
     from cosa.nlp.functions import text2terms
+    global dbpCache
+    global spotlightCache
     node = prepareQueryNode(input)
     myDBPedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
-    spotlight = myDBPedia.spotlight(input, 0.1)
+    if input in spotlightCache:
+        spotlight = spotlightCache[input]
+    else:
+        spotlight = myDBPedia.spotlight(input, 0.1)
+        spotlightCache[input] = spotlight
+    global dbpCache
     if spotlight:
         for item in spotlight:
             node['entities'][item] = {}
             node['entities'][item]['score'] = spotlight[item]['score']
             node['entities'][item]['types'] = {}
             node['entities'][item]['subjects'] = {}
-            dbpSubjsTypes = myDBPedia.getSubjURIs(item) #returns an array of dictionaries {'uri':<uri>,'type':<type>,{distance':<distance>}
+            if item in dbpCache:
+                dbpSubjsTypes = dbpCache[item]
+            else:
+                dbpSubjsTypes = myDBPedia.getSubjURIs(item) #returns an array of dictionaries {'uri':<uri>,'type':<type>,{distance':<distance>}
+                dbpCache[item] = dbpSubjsTypes
             for arrayItem in dbpSubjsTypes:
                 if arrayItem['type'] == 'S':
                     #singleItem = {}
