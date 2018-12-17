@@ -38,7 +38,9 @@ def matchTerms(queryTerms, nodeTerms, model, number):
             if qt in dic:
                 tfreq += dic[qt]
     # Formula
-    score = ((tfreq / nsize) + (tfreq / qsize)) / 2
+    tfOVERns = (tfreq / nsize) if nsize > 0 else 0.0
+    tfOVERqs = (tfreq / qsize) if qsize > 0 else 0.0
+    score = (tfOVERns + tfOVERqs) / 2
     return score
 
 def __weightedSize(entitySet):
