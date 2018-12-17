@@ -116,9 +116,9 @@ def _runTest(inputFile, graphFile, outputFile):
 
                 #searching using dbpedia keywords
                 textSearchTerm = row[1]
-                dbpSearchTerm = row[2]
+                #dbpSearchTerm = row[2]
                 textSanitized = ''
-                dbpSanitized= ''
+                #dbpSanitized= ''
                 # escape any difficult chars
                 for character in textSearchTerm:
                     if _needs_escaping(character):
@@ -126,11 +126,13 @@ def _runTest(inputFile, graphFile, outputFile):
                     else:
                         textSanitized += character
 
+                '''
                 for character in dbpSearchTerm:
                     if _needs_escaping(character):
                         dbpSanitized += '\\%s' % character
                     else:
                         dbpSanitized += character
+                '''
 
                 codeTerm = str(code) + '-' + row[1]
 
@@ -144,9 +146,9 @@ def _runTest(inputFile, graphFile, outputFile):
                     # Do ES search...
                     #For dbpedia URIs, enclose each one in quotes
                     textSanitized = textSanitized.strip()
-                    dbpSanitized = dbpSanitized.strip()
+                    #dbpSanitized = dbpSanitized.strip()
 
-                    dbpSanitized = '"' + '" "'.join(dbpSanitized.split(' ')) + '"'
+                    #dbpSanitized = '"' + '" "'.join(dbpSanitized.split(' ')) + '"'
 
 
                     '''
@@ -156,7 +158,7 @@ def _runTest(inputFile, graphFile, outputFile):
                     '''
                     rs = ResultSet()
                     #model = None
-                    rs = searchGraph(textSanitized, g, 'subjects', model, 95, 0)
+                    rs = searchGraph(textSanitized, g, 'subjects', model, 95, 4)
                     print '**************'
                     print code, textSanitized
                     #print 'Top 10 results by normalised(by depth) score'
