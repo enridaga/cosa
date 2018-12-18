@@ -81,6 +81,10 @@ class ResultSet:
                 tempItem = sortedListB.pop(0)
                 sortedList.append(tempItem)
                 self.removeFromList('code', tempItem['code'],sortedListA)
+        position = 1
+        for item in sortedList:
+            item['position'] = position
+            position += 1
         if top == 0:
             top = len(sortedList)
         #for item in sortedList[:top]:
