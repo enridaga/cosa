@@ -82,7 +82,7 @@ class ResultSet:
                 sortedList.append(tempItem)
                 self.removeFromList('code', tempItem['code'],sortedListA)
         if top == 0:
-            top = len(self.sortedList)
+            top = len(sortedList)
         #for item in sortedList[:top]:
             #print item['code'], item['depth'], item['label']
         return sortedList
