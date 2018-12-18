@@ -2,7 +2,7 @@
 import sys
 from os.path import dirname, join, abspath
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-from cosa.search.functions import createQueryNode, sortAndCut, searchGraph
+from cosa.search.functions import createQueryNode, sortAndCut, searchGraph, searchGraphCombined
 from cosa.graph.functions import traverse, loadGraph
 from cosa.search.ResultSet import ResultSet
 from cosa.nlp.Model import *
@@ -11,7 +11,7 @@ def _test():
     import sys
     from os.path import dirname, join, abspath
     sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-    from cosa.search.functions import createQueryNode, sortAndCut, searchGraph
+    from cosa.search.functions import createQueryNode, sortAndCut, searchGraph, searchGraphCombined
     from cosa.graph.functions import traverse, loadGraph
 
     print 'test'
@@ -34,24 +34,26 @@ def _search():
         try:
             text = sys.stdin.readline()
             text = text.split(':')
-            method = 'entities'
+            method = 'terms'
             if len(text) > 1:
                 method = text[0]
                 text = text[1]
             print 'Searching with method ' + method + '...'
             rs = ResultSet()
-            if method == 'terms':
-                rs = searchGraph(text, g, method, model, 95, 0)
+            if method == 'combined':
+                rs = searchGraphCombined(text, g, method, model, 95, 4)
+
+                print '**************'
+                print 'Top 10 COMBINED results by normalised(by depth) score'
+                rs.printTopNScoresCombined(10);
+
             else:
-                rs = searchGraph(text, g, method, None, 95, 0)
+                rs = searchGraph(text, g, method, model, 95, 4)
 
-            print '**************'
-            print 'Top 10 results by score'
-            rs.printTopScores(10);
+                print '**************'
+                print 'Top 10 results by normalised(by depth) score'
+                rs.printTopNScores(10);
 
-            print '**************'
-            print 'Top 10 results by normalised(by depth) score'
-            rs.printTopNScores(10);
 
         except Exception as e:
             print e

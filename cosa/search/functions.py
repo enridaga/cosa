@@ -114,6 +114,8 @@ def sortAndCutOnScore(queue,percentage,field):
     mean = np.mean(scoresList)
 
     cutScore = topScore - ((topScore - bottomScore) * (float(percentage)/100))
+    print ''
+    print 'Processing:',field
     print 'Top score:',topScore
     print 'Bottom score:',bottomScore
     print 'SD:',SD
@@ -184,6 +186,87 @@ def searchGraph(input, graph, method, model, cutPercent, stop = 0):
                 # push all subs to the next queue
                 for sub in currentNode['sub']:
                     currentNode['sub'][sub]['parentScore'] = currentNode['parentScore'] + currentNode['localScore']
+                    currentNode['sub'][sub]['depth'] = currentDepth + 1
+                    nextQ.append(currentNode['sub'][sub])
+        thisQ = list(nextQ)
+        thisQScored = []
+        nextQ = []
+        currentDepth += 1
+    print 'Items collected: ',rs.length()
+    return rs
+
+'''
+This function largely replicates that of searchGraph(), but looks at matching each node
+twice - once for the embeddings terms and again for the dbpedia subjects. At each stage, one
+version of thisQ is maintained (the list of nodes to be processed), but the results are sorted and cut twice
+into two lists (one for each scoring method), before being merged and pushed into nextQ 
+'''
+def searchGraphCombined(input, graph, method, model, cutPercent, stop = 0):
+    qNode = createQueryNode(unicode(input, 'utf-8'))
+    thisQ = []
+    thisQScored = []
+    thisQScoredSortedT = []
+    thisQScoredSortedS = []
+    nextQ = []
+    rs = ResultSet()
+    currentDepth = 1
+    #score = 0.0
+
+    #initially populate thisQ with graph root first layer subs
+    for sub in graph['sub']:
+        graph['sub'][sub]['depth'] = currentDepth
+        thisQ.append(graph['sub'][sub])
+
+    while thisQ or nextQ:
+        print ''
+        sys.stdout.write('Processing queue. Depth: ' + str(currentDepth) + ' ')
+        while thisQ:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+            currentNode = thisQ.pop()
+            currentNode['localScoreT'] = matchNodes(qNode, currentNode, 'terms', model)
+            currentNode['localScoreS'] = matchNodes(qNode, currentNode, 'subjects', model)
+            if 'parentScoreT' in currentNode:
+                currentNode['scoreT'] = currentNode['parentScoreT'] + currentNode['localScoreT']
+            else:
+                currentNode['parentScoreT'] = 0.0
+                currentNode['scoreT'] = currentNode['parentScoreT'] + currentNode['localScoreT']
+
+            if 'parentScoreS' in currentNode:
+                currentNode['scoreS'] = currentNode['parentScoreS'] + currentNode['localScoreS']
+            else:
+                currentNode['parentScoreS'] = 0.0
+                currentNode['scoreS'] = currentNode['parentScoreS'] + currentNode['localScoreS']
+
+            thisQScored.append(currentNode)
+
+
+        thisQScoredSortedT = sortAndCutOnScore(thisQScored,cutPercent,'scoreT')
+        thisQScoredSortedS = sortAndCutOnScore(thisQScored, cutPercent, 'scoreS')
+
+        mergedList = thisQScoredSortedT + thisQScoredSortedS
+        mergedListUnique = []
+        for item in mergedList:
+            if item in mergedListUnique:
+                pass
+            else:
+                mergedListUnique.append(item)
+
+        while mergedListUnique:
+            currentNode = mergedListUnique.pop()
+            #if isLeaf(currentNode) or (currentDepth == stop):
+            if isLeaf(currentNode) or (str(currentNode['row']['Hier.Pos.']) == str(stop)):
+                currentNode['nScoreT'] = currentNode['scoreT'] / currentDepth
+                currentNode['nScoreS'] = currentNode['scoreS'] / currentDepth
+                print 'collecting ',currentNode['code'], currentNode['nScoreT'], currentNode['nScoreS'], currentDepth
+                #don't collect items with zero score...
+                if (currentNode['nScoreS'] > 0) or (currentNode['nScoreT'] > 0):
+                    rs.collect(currentNode)
+            else:
+                # push all subs to the next queue
+                for sub in currentNode['sub']:
+                    currentNode['sub'][sub]['parentScoreT'] = currentNode['parentScoreT'] + currentNode['localScoreT']
+                    currentNode['sub'][sub]['parentScoreS'] = currentNode['parentScoreS'] + currentNode['localScoreS']
                     currentNode['sub'][sub]['depth'] = currentDepth + 1
                     nextQ.append(currentNode['sub'][sub])
         thisQ = list(nextQ)
