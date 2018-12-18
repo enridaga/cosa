@@ -46,6 +46,8 @@ def _search():
                 print '**************'
                 print 'Top 10 COMBINED results by normalised(by depth) score'
                 rs.printTopNScoresCombined(10);
+                print 'NOW MERGE...'
+                rs.sortByTwoScores('nScoreT', 'nScoreS', 10)
 
             else:
                 rs = searchGraph(text, g, method, model, 95, 4)
