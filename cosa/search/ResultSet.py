@@ -61,3 +61,28 @@ class ResultSet:
             item['position'] = position
             position += 1
         return sortedList
+
+    def removeFromList(self, field, value, L):
+        for i in range(0,len(L)):
+            if L[i][field] == value:
+                L.pop(i)
+                break
+
+    def sortByTwoScores(self, fieldA, fieldB, top=0):
+        sortedListA = sorted(self.results, key=itemgetter(fieldA), reverse=True)
+        sortedListB = sorted(self.results, key=itemgetter(fieldB), reverse=True)
+        sortedList = []
+        while sortedListA or sortedListB:
+            if sortedListA:
+                tempItem = sortedListA.pop(0)
+                sortedList.append(tempItem)
+                self.removeFromList('code', tempItem['code'],sortedListB)
+            if sortedListB:
+                tempItem = sortedListB.pop(0)
+                sortedList.append(tempItem)
+                self.removeFromList('code', tempItem['code'],sortedListA)
+        if top == 0:
+            top = len(self.sortedList)
+        #for item in sortedList[:top]:
+            #print item['code'], item['depth'], item['label']
+        return sortedList
