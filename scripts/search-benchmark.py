@@ -3,7 +3,7 @@ import sys
 from os.path import dirname, join, abspath
 
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-from cosa.search.functions import createQueryNode, sortAndCut, searchGraph
+from cosa.search.functions import createQueryNode, sortAndCut, searchGraph, searchGraphCombined
 from cosa.graph.functions import traverse, loadGraph
 from cosa.search.ResultSet import ResultSet
 from cosa.nlp.Model import *
