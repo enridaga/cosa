@@ -66,6 +66,7 @@ def csv2graph(input, output):
             dictionary[code]['code'] = code
             dictionary[code]['hierarchy'] = row['Hier.Pos.']
             dictionary[code]["label"] = row["Description"]
+            dictionary[code]["allDescriptions"] = ''
             dictionary[code]["codeBase"] = codeBase
             dictionary[code]["codeSuffix"] = codeSuffix
             if dictionary[code]['label'] == 'Other':
@@ -74,16 +75,19 @@ def csv2graph(input, output):
                 dictionary[code]['other'] = False
 
     for key in dictionary:
+        tempAllDescriptions = dictionary[key]['label']
         currentKey = key
         keepLooping = True
         while (keepLooping):
             parentKey = __getParent(currentKey, dictionary)
             if (parentKey):
                 dictionary[currentKey]['parent'] = parentKey
+                tempAllDescriptions = tempAllDescriptions + dictionary[parentKey]['label']
                 currentKey = parentKey
             else:
                 dictionary[currentKey]['parent'] = False
                 keepLooping = False
+            dictionary[key]['allDescriptions'] = tempAllDescriptions
 
     graph = {'sub': {}}
     for key in dictionary:
