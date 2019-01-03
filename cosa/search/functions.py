@@ -10,7 +10,8 @@ from cosa.search.ResultSet import ResultSet
 # dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
 def entities(input, dbpedia, confidence = 0.1):
     from cosa.dbpedia.DBPedia import DBPedia
-    spotlight = dbpedia.spotlight(input, confidence)
+    cleanedInput = " ".join((" ".join(input.split("\n"))).split("\r"))
+    spotlight = dbpedia.spotlight(cleanedInput, confidence)
     entities = {}
 
     #if no entities returned (eg root node), just return empty entities dict
