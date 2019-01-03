@@ -23,9 +23,9 @@ def entities(input, dbpedia, confidence = 0.1):
         dbpSubjsTypes = dbpedia.getSubjURIs(item) #returns an array
         for arrayItem in dbpSubjsTypes:
             if arrayItem['type'] == 'S':
-                entities['entities'][item]['subjects'][arrayItem['uri']] = arrayItem['distance']
+                entities[item]['subjects'][arrayItem['uri']] = arrayItem['distance']
             elif arrayItem['type'] == 'T':
-                entities['entities'][item]['types'][arrayItem['uri']] = arrayItem['distance']
+                entities[item]['types'][arrayItem['uri']] = arrayItem['distance']
             else:
                 pass #it wasn't a 'subject' or 'Type', something went wrong
             

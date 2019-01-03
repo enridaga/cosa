@@ -82,7 +82,7 @@ def csv2graph(input, output):
             parentKey = __getParent(currentKey, dictionary)
             if (parentKey):
                 dictionary[currentKey]['parent'] = parentKey
-                tempAllDescriptions = tempAllDescriptions + dictionary[parentKey]['label']
+                tempAllDescriptions = tempAllDescriptions + ' ' + dictionary[parentKey]['label']
                 currentKey = parentKey
             else:
                 dictionary[currentKey]['parent'] = False
