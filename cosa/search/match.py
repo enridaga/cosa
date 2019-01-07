@@ -139,7 +139,9 @@ def matchNodes(queryNode, categoryNode, method = 'entities', model = None, embed
         if 'terms' in categoryNode:
             ct = categoryNode['terms']
         else:
-            ct = text2terms(categoryNode['label'])
+            #Changing this to create embeddings from full description
+            #ct = text2terms(categoryNode['label'])
+            ct = text2terms(categoryNode['allDescriptions'])
             categoryNode['terms'] = ct
         return matchTerms(qt, ct, model, embeddings)        
     else:
