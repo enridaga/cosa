@@ -28,12 +28,14 @@ def _dbpedia(input, output):
     from cosa.graph.functions import traverse, saveGraph, loadGraph
     from cosa.search.functions import entities
     from cosa.dbpedia.DBPedia import DBPedia
-    dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
+
+    #dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
+    dbpedia = DBPedia('http://kmi-appsvr06.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
     g = loadGraph(input)
     def populate(n):
         if 'label' in n:
-            n['entities'] = entities(n['label'],dbpedia)
-            print n['code']
+            n['entities'] = entities(n['allDescriptions'],dbpedia)
+            print n['code'], n['entities']
     traverse(g, populate)
     saveGraph(g, output)
 
@@ -55,6 +57,8 @@ def _fixEntities(input, output):
     traverse(g, fix)
     saveGraph(g, output)
 
+'''
+#this function is incomplete but we probably don't need it for now
 def _removeDupEntities(input, output):
     from cosa.graph.functions import traverse, saveGraph, loadGraph
     from cosa.search.functions import entities
@@ -63,12 +67,28 @@ def _removeDupEntities(input, output):
     g = loadGraph(input)
     def removeDups(n):
         if 'entities' in n:
-            for resource in n['entities']:
-                n['entities'][resource]['subjects'] = list(set(n['entities'][resource]['subjects']))
-                n['entities'][resource]['types'] = list(set(n['entities'][resource]['types']))
+            entitiesLookup = {}
+            for spotlightKey in n['entities']:
+                for subjectKey in n['entities'][spotlightKey]['subjects']:
+                    if subjectKey in entitiesLookup:
+                        #we've already seen this key - check the distance value we have so far
+                        if n['entities'][spotlightKey]['subjects'][subjectKey] < entitiesLookup[subjectKey]['distance']:
+                            #we've found a new lower value, store this in our log and go back and remove the
+                            #older entry with the higher value
+                            
+                            entitiesLookup[subjectKey] = n['entities'][spotlightKey]['subjects'][subjectKey]
+                            seenSubjects[subjectKey] = n['entities'][spotlightKey]['subjects'][subjectKey]
+                        else:
+                            #the value we already have found was lower, so remove this entry
+                            remove entry here..
+                    else:
+                        #we've not see this one before, so add it
+                        entitiesLookup[subjectKey] = {'spotlight':spotlightKey, 'distance': n['entities'][spotlightKey]['subjects'][subjectKey]}
+            n['entities']['subjects'] = newSubjDict
             print n['code']
     traverse(g, removeDups)
     saveGraph(g, output)
+'''
 
 def browse(input):
     from cosa.graph.functions import loadGraph
