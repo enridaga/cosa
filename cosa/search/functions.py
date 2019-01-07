@@ -7,6 +7,9 @@ from cosa.dbpedia.DBPedia import DBPedia
 from cosa.search.match import matchNodes
 from cosa.search.ResultSet import ResultSet
 
+dbpCache = {}
+spotlightCache = {}
+
 # dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
 def entities(input, dbpedia, confidence = 0.1):
     from cosa.dbpedia.DBPedia import DBPedia
@@ -14,13 +17,22 @@ def entities(input, dbpedia, confidence = 0.1):
     spotlight = dbpedia.spotlight(cleanedInput, confidence)
     entities = {}
 
+    global dbpCache
+
     #if no entities returned (eg root node), just return empty entities dict
     for item in spotlight or []:
         entities[item] = {}
         entities[item]['score'] = spotlight[item]['score']
         entities[item]['types'] = {}
         entities[item]['subjects'] = {}
-        dbpSubjsTypes = dbpedia.getSubjURIs(item) #returns an array
+
+        if item in dbpCache:
+            #dbpSubjsTypes = dbpedia.getSubjURIs(item)
+            dbpSubjsTypes = dbpCache[item]
+        else:
+            dbpSubjsTypes = dbpedia.getSubjURIs(item)  # returns an array of dictionaries {'uri':<uri>,'type':<type>,{distance':<distance>}
+            dbpCache[item] = dbpSubjsTypes
+
         for arrayItem in dbpSubjsTypes:
             if arrayItem['type'] == 'S':
                 entities[item]['subjects'][arrayItem['uri']] = arrayItem['distance']
@@ -50,8 +62,7 @@ def prepareQueryNode(input):
         }
     return node
 
-dbpCache = {}
-spotlightCache = {}
+
 
 def createQueryNode(input):
     from cosa.dbpedia.DBPedia import DBPedia
