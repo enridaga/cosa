@@ -3,9 +3,39 @@ import time
 
 
 class DBPedia:
+    def loadCaches(self):
+        f = open(self.spotlightCacheFile, 'r')
+        data = f.read()
+        f.close()
+        self.spotlightCache = eval(data)
+
+        f = open(self.subjectsCacheFile, 'r')
+        data = f.read()
+        f.close()
+        self.subjectsCache = eval(data)
+
+    def saveCaches(self):
+        f = open(self.spotlightCacheFile, 'w')
+        f.write(str(self.spotlightCache))
+        f.close()
+
+        f = open(self.subjectsCacheFile, 'w')
+        f.write(str(self.subjectsCache))
+        f.close()
+
     def __init__(self, spotlightEndpoint, dbpediaEndpoint):
         self.spotlightEndpoint = spotlightEndpoint
         self.dbpediaEndpoint = dbpediaEndpoint
+
+        self.spotlightCacheFile = '../data/spotlightCache.dict'
+        self.subjectsCacheFile = '../data/subjectsCache.dict'
+
+        #self.loadCaches()
+        self.spotlightCache = {}
+        self.subjectsCache = {}
+        #self.saveCaches()
+
+
 
     def spotlight(self, searchText, confidence):
         url = self.spotlightEndpoint
@@ -99,16 +129,21 @@ class DBPedia:
     # just get the Subject URIs
     def getSubjURIs(self, inputURI):
         returnArray = []
-        fullResponse = self.dbpediaRequestEntities(inputURI)
-        try:
-            bindings = fullResponse['results']['bindings']
-            for binding in bindings:
-                singleItem = {}
-                singleItem['uri'] = binding['obj']['value']
-                singleItem['type'] = binding['T']['value']
-                singleItem['distance'] = binding['L']['value']
-                returnArray.append(singleItem)
-        except KeyError as e:
-            print e
-            pass
+        if inputURI in self.subjectsCache:
+            returnArray = self.subjectsCache[inputURI]
+        else:
+            fullResponse = self.dbpediaRequestEntities(inputURI)
+            try:
+                bindings = fullResponse['results']['bindings']
+                for binding in bindings:
+                    singleItem = {}
+                    singleItem['uri'] = binding['obj']['value']
+                    singleItem['type'] = binding['T']['value']
+                    singleItem['distance'] = binding['L']['value']
+                    returnArray.append(singleItem)
+            except KeyError as e:
+                print e
+                pass
+            self.subjectsCache[inputURI] = returnArray
+
         return returnArray
