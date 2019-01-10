@@ -13,11 +13,20 @@ spotlightCache = {}
 # dbpedia = DBPedia('http://anne.kmi.open.ac.uk/rest/annotate', 'http://dbpedia.org/sparql')
 def entities(input, dbpedia, confidence = 0.1):
     from cosa.dbpedia.DBPedia import DBPedia
-    cleanedInput = " ".join((" ".join(input.split("\n"))).split("\r"))
-    spotlight = dbpedia.spotlight(cleanedInput, confidence)
-    entities = {}
 
     global dbpCache
+    global spotlightCache
+
+    cleanedInput = " ".join((" ".join(input.split("\n"))).split("\r"))
+    if cleanedInput in spotlightCache:
+        spotlight = spotlightCache[cleanedInput]
+    else:
+        spotlight = dbpedia.spotlight(cleanedInput, confidence)
+        spotlightCache[cleanedInput] = spotlight
+
+    entities = {}
+
+
 
     #if no entities returned (eg root node), just return empty entities dict
     for item in spotlight or []:
