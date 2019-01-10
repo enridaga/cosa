@@ -22,40 +22,74 @@ def matchTerms(queryTerms, nodeTerms, model, number):
     t = nodeTerms
     qsize = len(q)
     nsize = len(t)
-    tfreq = 0.0
+    ntfreq = 0.0
+    qtfreq = 0.0
     #this_time = time.time()    
     #print "terms calculated", str(this_time - start_time)
     global modelCache
+
+    #Nested loop twice, once in each directions...
+    #Loop nest 1...
     for ttt in t:
         if ttt in modelCache:
             dic = modelCache[ttt]
         else:
             dic = model.similarToTerm(ttt, number)
             modelCache[ttt] = dic
+
+        #print "q: ",q
+        #print "t: ",t
+        #print "dic: ", dic
+        #print "Press return to continue"
+        #text = sys.stdin.readline()
+        maxNTScore = 0.0
         for qt in q:
             if not isinstance(qt, unicode):
                 qt = unicode(qt, "utf-8")
             if qt in dic:
-                tfreq += dic[qt]
+                if dic[qt] > maxNTScore:
+                    maxNTScore = dic[qt]
+        ntfreq += maxNTScore
+
+    # Loop nest 2, in the other direction...
+    for qt in q:
+        if not isinstance(qt, unicode):
+            qt = unicode(qt, "utf-8")
+
+        maxQTScore = 0.0
+        for ttt in t:
+            if ttt in modelCache:
+                dic = modelCache[ttt]
+            else:
+                dic = model.similarToTerm(ttt, number)
+                modelCache[ttt] = dic
+
+            if qt in dic:
+                if dic[qt] > maxQTScore:
+                    maxQTScore = dic[qt]
+        qtfreq += maxQTScore
+
     # Formula
-    tfOVERns = (tfreq / nsize) if nsize > 0 else 0.0
-    tfOVERqs = (tfreq / qsize) if qsize > 0 else 0.0
-    score = (tfOVERns + tfOVERqs) / 2
+    ntfOVERns = (ntfreq / nsize) if nsize > 0 else 0.0
+    qtfOVERqs = (qtfreq / qsize) if qsize > 0 else 0.0
+    score = (ntfOVERns + qtfOVERqs) / 2
     return score
 
-def __weightedSize(entitySet):
+
+def __weightedSize(entitySet, distance=5):
     total = 0.0
     #print list(entitySet)
     for item in entitySet:
         #print item
-        total += 1.0 / float(entitySet[item])
+        if int(entitySet[item]) <= distance:
+            total += 1.0 / float(entitySet[item])
     return total
 
-def __intersection(qents,nents):
+def __intersection(qents,nents, distance=5):
     size = 0.0
     for qek in qents:
         for nek in nents:
-            if qek == nek:
+            if (qek == nek) and (int(qents[qek]) <= distance) and (int(nents[nek]) <= distance):
                 '''
                 qents[qek] = a = query item distance
                 nents[qek] = b = catalogue node item distance
@@ -74,9 +108,11 @@ def __matchEntities(queryEntities, nodeEntities, key):
     for qek in queryEntities:
         qentity = queryEntities[qek]
         qscore = float(qentity['score'])
+        #print "qentity, score: ",qentity, qscore
         for nek in nodeEntities:
             nentity = nodeEntities[nek]
             nscore = float(nentity['score'])
+            #print "Nentity, score: ", nentity, nscore
             #qentss = set(qentity[key])
             #nentss = set(nentity[key])
             #uentss = qentss.union(nentss)
@@ -103,9 +139,19 @@ def __matchEntities(queryEntities, nodeEntities, key):
                 wMwNS = wM/wNS
             else:
                 wMwNS = 0
-            score = ( ( wMwQS + wMwNS ) / 2 ) * nscore * qscore
+            score = ((wMwQS + wMwNS) / 2) * nscore * qscore
+            #if score > 0:
+                #print "Nentity, score: ", nentity, nscore
+                #print "(" + str(wMwQS) + " + " + str(wMwNS) + ") / 2"
 
             entsScore += score
+
+    ''' 
+    Divide the total score by the total number of permutations of qentities vs nentities, to get a value out of 1.0
+    '''
+    perms = len(queryEntities) * len(nodeEntities)
+
+    entsScore = (entsScore / perms) if (perms > 0) else 0
     return entsScore
 
 def matchTypes(queryEntities, nodeEntities):
@@ -139,10 +185,14 @@ def matchNodes(queryNode, categoryNode, method = 'entities', model = None, embed
         if 'terms' in categoryNode:
             ct = categoryNode['terms']
         else:
-            #Changing this to create embeddings from full description
+            #Changing this to create embeddings from full description, not local node label
             #ct = text2terms(categoryNode['label'])
             ct = text2terms(categoryNode['allDescriptions'])
             categoryNode['terms'] = ct
+            #print "Node full Desc: ",categoryNode['allDescriptions']
         return matchTerms(qt, ct, model, embeddings)        
+    elif method == 'combined':
+        return (matchNodes(queryNode, categoryNode, 'terms', model, embeddings) + matchNodes(queryNode, categoryNode, 'subjects', model, embeddings))/2
+
     else:
         raise ValueError('Unknown method: ' + method)    
