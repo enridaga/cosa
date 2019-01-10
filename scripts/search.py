@@ -20,13 +20,13 @@ def _test():
 
 def _search():
     print 'Loading graph...'
-    g = loadGraph('../data/graph_entities.dict')
+    g = loadGraph('graph_entities.dict')
     print 'Graph loaded.'
 
     print 'Loading model...'
-    model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
+    #model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
     #model = Model('/Users/ed4565/Development/led-discovery/data/analysis/gutenberg2vec/word2vec.model')
-    
+    model = None
     print 'Model loaded.'
 
     while(True):
@@ -40,8 +40,8 @@ def _search():
                 text = text[1]
             print 'Searching with method ' + method + '...'
             rs = ResultSet()
-            if method == 'combined':
-                rs = searchGraphCombined(text, g, method, model, 95, 4)
+            if method == 'combinedold':
+                rs = searchGraphCombined(text, g, method, model, 100, 2)
 
                 print '**************'
                 print 'Top 10 COMBINED results by normalised(by depth) score'
@@ -50,7 +50,7 @@ def _search():
                 rs.sortByTwoScores('nScoreT', 'nScoreS', 10)
 
             else:
-                rs = searchGraph(text, g, method, model, 95, 4)
+                rs = searchGraph(text, g, method, model, 100, 2)
 
                 print '**************'
                 print 'Top 10 results by normalised(by depth) score'
@@ -65,6 +65,28 @@ def _search():
             pass #print " - error"
 
 
+def _embeddings():
+    print 'Loading model...'
+    model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
+    # model = Model('/Users/ed4565/Development/led-discovery/data/analysis/gutenberg2vec/word2vec.model')
+    print 'Model loaded.'
+
+    while (True):
+        print 'Retrieve embeddings:'
+        try:
+            text = sys.stdin.readline().split('\n')[0]
+            dic = model.similarToTerm(text,100)
+            print dic
+
+
+        except Exception as e:
+            print e
+            pass  # print " - not found (exception)"
+        except Error as r:
+            print r
+            pass  # print " - error"
+
+
 def main():
     if len(sys.argv) == 1:
         exit(1)
@@ -72,6 +94,8 @@ def main():
     func = sys.argv[1]
     if(func == 'search'):
         _search()
+    elif(func == 'embeddings'):
+        _embeddings()
     else:
         _test()
 

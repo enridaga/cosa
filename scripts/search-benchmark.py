@@ -81,6 +81,7 @@ def _runTest(inputFile, graphFile, outputFile):
     print 'Graph loaded.'
     print 'Loading model...'
     model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
+    testCounter = 1
 
     processLog = []
 
@@ -101,6 +102,8 @@ def _runTest(inputFile, graphFile, outputFile):
             outputHeader[8] = 'results sample(10)'
             writer.writerow(outputHeader)
             for row in csvreader:
+                print "Processing test row: ", testCounter
+                testCounter += 1
                 code = _padTo10(row[0])
 
                 outputRow = [None] * 9
@@ -158,14 +161,14 @@ def _runTest(inputFile, graphFile, outputFile):
                     '''
                     rs = ResultSet()
                     #model = None
-                    #rs = searchGraph(textSanitized, g, 'terms', model, 95, 4)
-                    rs = searchGraphCombined(textSanitized, g, 'combined', model, 95, 2)
+                    rs = searchGraph(textSanitized, g, 'terms', model, 100, 4)
+                    #rs = searchGraphCombined(textSanitized, g, 'combined', model, 100, 2)
                     print '**************'
                     print code, textSanitized
                     #print 'Top 10 results by normalised(by depth) score'
                     #rs.printTopNScores(10);
-                    #sortedRes = rs.sortByNScore()
-                    sortedRes = rs.sortByTwoScores('nScoreT', 'nScoreS')
+                    sortedRes = rs.sortByNScore()
+                    #sortedRes = rs.sortByTwoScores('nScoreT', 'nScoreS')
 
                     # Generate a string of first 10 results
                     top10String = ''
@@ -180,9 +183,19 @@ def _runTest(inputFile, graphFile, outputFile):
                     for i in (2, 4, 6, 8, 10):
                         topPosition[i] = 0
 
+                        howManySeen = 0
+                        codesSeen = []
                         for item in sortedRes:
-                            if isMatch(code,item['code'],i) and (((item['position']) < topPosition[i]) or (topPosition[i] == 0)):
-                                topPosition[i] = item['position']
+                            if item['code'][:i] in codesSeen:
+                                #we've already seen this code stub, do nothing
+                                pass
+                            else:
+                                #not seen this code stub yet
+                                codesSeen.append(item['code'][:i])
+                                howManySeen += 1
+                                if isMatch(code, item['code'], i) and ((howManySeen < topPosition[i]) or (topPosition[i] == 0)):
+                                    topPosition[i] = howManySeen
+
                                 #print 'HIT at ',i,': ', topPosition[i]
                     outputRow[2] = len(sortedRes)
                     outputRow[3] = topPosition[2] if topPosition[2] > 0 else ''
