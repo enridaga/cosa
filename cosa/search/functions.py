@@ -119,19 +119,21 @@ def sortAndCutOnScore(queue,percentage,field):
     bottomScore = float(sortedList[len(sortedList)-1][field])
 
     #calc SD and mean
+    '''
     scoresList = []
     for item in sortedList:
         scoresList.append(item[field])
     SD = np.std(scoresList)
     mean = np.mean(scoresList)
+    '''
 
     cutScore = topScore - ((topScore - bottomScore) * (float(percentage)/100))
     print ''
     print 'Processing:',field
     print 'Top score:',topScore
     print 'Bottom score:',bottomScore
-    print 'SD:',SD
-    print 'Mean:',mean
+    #print 'SD:',SD
+    #print 'Mean:',mean
     print 'Cut score:',cutScore
     index = 0
     for item in sortedList:
@@ -190,9 +192,10 @@ def searchGraph(input, graph, method, model, cutPercent, stop = 0):
             #if isLeaf(currentNode) or (currentDepth == stop):
             if isLeaf(currentNode) or (str(currentNode['row']['Hier.Pos.']) == str(stop)):
                 currentNode['nScore'] = currentNode['score'] / currentDepth
-                print 'collecting ',currentNode['code'], currentNode['localScore'], currentNode['score'], currentNode['nScore'], currentDepth
+
                 #don't collect items with zero score...
                 if currentNode['nScore'] > 0:
+                    print 'collecting ', currentNode['code'], currentNode['localScore'], currentNode['score'], currentNode['nScore'], currentDepth
                     rs.collect(currentNode)
             else:
                 # push all subs to the next queue
