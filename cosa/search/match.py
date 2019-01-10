@@ -129,8 +129,21 @@ def __matchEntities(queryEntities, nodeEntities, key):
             #score = ((float(len(ientss)) / float(len(uentss))) * nscore * qscore)
             #score = (((__weightedSize(ientss)/__weightedSize(qentss)) + (__weightedSize(ientss)/__weightedSize(nentss))) / 2) * nscore * qscore
             wM = __intersection(qentity[key],nentity[key])
-            wQS = __weightedSize(qentity[key])
-            wNS = __weightedSize(nentity[key])
+
+            #We don't necessarily need to recalculate the weighted sizes of these subject collections over and over again. Cache these values.
+            if 'subjWS' in qentity:
+                wQS = qentity['subjWS']
+            else:
+                wQS = __weightedSize(qentity[key])
+                qentity['subjWS'] = wQS
+
+            if 'subjWS' in nentity:
+                wNS = nentity['subjWS']
+            else:
+                wNS = __weightedSize(nentity[key])
+                nentity['subjWS'] = wNS
+
+
             if wQS > 0:
                 wMwQS = wM/wQS
             else:
