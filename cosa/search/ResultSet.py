@@ -90,3 +90,30 @@ class ResultSet:
         #for item in sortedList[:top]:
             #print item['code'], item['depth'], item['label']
         return sortedList
+
+    def sortAndBlendTwoScores(self, fieldA, fieldB, top=0):
+        maxA = 0.0
+        maxB = 0.0
+        #first loop through and get max values for scores A and B
+        for item in self.results:
+            if item[fieldA] > maxA:
+                maxA = item[fieldA]
+            if item[fieldB] > maxB:
+                maxB = item[fieldB]
+
+        for item in self.results:
+            adjustedA = (item[fieldA] / maxA) if maxA > 0.0 else 0
+            adjustedB = (item[fieldB] / maxB) if maxB > 0.0 else 0
+            item['adjustedAverage'] = (adjustedA + adjustedB) / 2
+
+        sortedList = sorted(self.results, key=itemgetter('adjustedAverage'), reverse=True)
+
+        position = 1
+        for item in sortedList:
+            item['position'] = position
+            position += 1
+        if top == 0:
+            top = len(sortedList)
+        # for item in sortedList[:top]:
+        # print item['code'], item['depth'], item['label']
+        return sortedList
