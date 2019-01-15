@@ -112,16 +112,9 @@ def matchTermsTFIDF(queryTerms, nodeTerms, nodeTFIDFDic, model, number):
                 #print "QT:",qt
                 #print "TTT:",ttt
                 #print "catTFIDFDic:",catTFIDFDic
-                embDicScore = dic[qt]
-                try:
-                    tfidfScore = nodeTFIDFDic[ttt]
-                except:
-                    print "**************"
-                    print "qt:",qt
-                    print "node terms:",t
-                    print "ttt not in tfidfDic:",ttt
-                    print "dic:",nodeTFIDFDic
-                combinedScore = embDicScore * tfidfScore
+                embeddingRelevancy = dic[qt]
+                termTFIDF = nodeTFIDFDic[ttt]
+                combinedScore = embeddingRelevancy * termTFIDF
                 if combinedScore > maxNTScore:
                     maxNTScore = combinedScore
         ntfreq += maxNTScore
@@ -140,8 +133,11 @@ def matchTermsTFIDF(queryTerms, nodeTerms, nodeTFIDFDic, model, number):
                 modelCache[ttt] = dic
 
             if qt in dic:
-                if (dic[qt] * nodeTFIDFDic[ttt]) > maxQTScore:
-                    maxQTScore = (dic[qt] * nodeTFIDFDic[ttt])
+                embeddingRelevancy = dic[qt]
+                termTFIDF = nodeTFIDFDic[ttt]
+                combinedScore = embeddingRelevancy * termTFIDF
+                if combinedScore > maxQTScore:
+                    maxQTScore = combinedScore
         qtfreq += maxQTScore
 
     # Formula
