@@ -24,6 +24,85 @@ def _embeddings(file, inp, out):
     traverse(g, populate)
     saveGraph(g, out)
 
+arrayOfNodeTexts = []
+textColl = None
+
+def _addTerms(inp, out):
+    from cosa.nlp.functions import text2terms, enpos, depos
+    from cosa.nlp.Model import Model
+    from cosa.graph.functions import traverse, saveGraph, loadGraph
+    import nltk.corpus
+    from nltk.text import TextCollection
+
+    #m = Model(file)
+    print "Loading graph..."
+    g = loadGraph(inp)
+    print "Graph loaded"
+    global arrayOfNodeTexts
+    global textColl
+    arrayOfNodeTexts = []
+    textColl = None
+    def popTerms(n):
+        global arrayOfNodeTexts
+        if 'label' in n:
+            if not isinstance(n['allDescriptions'], unicode):
+                n['allDescriptions'] = unicode(n['allDescriptions'], "utf-8")
+            terms = text2terms(n['allDescriptions'])
+            n['termTFIDF'] = {}
+            termsString = ""
+            for t in terms:
+                #sim = m.similarToTerm(t, 100)
+                n['termTFIDF'][t] = 0.0
+                termsString = termsString + t + " "
+            n['allTerms'] = termsString
+            arrayOfNodeTexts.append(termsString)
+
+    def calcTFIDF(n):
+        global textColl
+        if 'label' in n:
+            for term in n['termTFIDF']:
+                tfidf = textColl.tf_idf(term, n['allTerms'])
+                n['termTFIDF'][term] = tfidf
+
+    print "Populating graph with terms..."
+    traverse(g, popTerms)
+    print "Populated graph with terms"
+
+    print "Creating TextCollection"
+    textColl = TextCollection(arrayOfNodeTexts)
+
+    print "Calculating TFIDF..."
+    traverse(g, calcTFIDF)
+    print "Calculated TFIDF"
+
+
+    print "Saving Graph..."
+    saveGraph(g, out)
+    print "Graph saved"
+
+'''
+def _addTFIDF(inp, out):
+    from cosa.nlp.functions import text2terms, enpos, depos
+    from cosa.nlp.Model import Model
+    from cosa.graph.functions import traverse, saveGraph, loadGraph
+    #m = Model(file)
+    print "Loading graph..."
+    g = loadGraph(inp)
+    print "Graph loaded"
+    def populate(n):
+        if 'label' in n:
+            #create text collection
+
+            for term in n['terms']:
+                #for each term, calculate TF_IDF
+
+
+    traverse(g, populate)
+    print "Saving Graph..."
+    saveGraph(g, out)
+    print "Graph saved"
+'''
+
 def _dbpedia(input, output):
     from cosa.graph.functions import traverse, saveGraph, loadGraph
     from cosa.search.functions import entities
@@ -118,8 +197,8 @@ def main():
     func = sys.argv[1]
     if(func == 'csv2graph'):
         _csv2graph(sys.argv[2], sys.argv[3])
-    elif(func == 'populate-terms'):
-        _embeddings(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif(func == 'add-terms'):
+        _addTerms(sys.argv[2], sys.argv[3])
     elif(func == 'populate-entities'):
         _dbpedia(sys.argv[2], sys.argv[3])
     elif(func == 'browse'):
