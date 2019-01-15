@@ -15,18 +15,18 @@ def _test():
     from cosa.graph.functions import traverse, loadGraph
 
     print 'test'
-    g = loadGraph('../data/graph_entities.dict')
+    g = loadGraph('./graph_entities_terms.dict')
     searchGraph('knitted jumper',g)
 
 def _search():
     print 'Loading graph...'
-    g = loadGraph('graph_entities.dict')
+    g = loadGraph('./graph_entities_terms.dict')
     print 'Graph loaded.'
 
     print 'Loading model...'
-    #model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
+    model = Model('/Users/jc33796/Documents/UKPostings/Data/Gutenberg2Vec/word2vec.model')
     #model = Model('/Users/ed4565/Development/led-discovery/data/analysis/gutenberg2vec/word2vec.model')
-    model = None
+    #model = None
     print 'Model loaded.'
 
     while(True):
@@ -50,7 +50,7 @@ def _search():
                 rs.sortByTwoScores('nScoreT', 'nScoreS', 10)
 
             else:
-                rs = searchGraph(text, g, method, model, 100, 2)
+                rs = searchGraph(text, g, method, model, 100, 0)
 
                 print '**************'
                 print 'Top 10 results by normalised(by depth) score'

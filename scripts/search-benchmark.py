@@ -161,14 +161,15 @@ def _runTest(inputFile, graphFile, outputFile):
                     '''
                     rs = ResultSet()
                     #model = None
-                    rs = searchGraph(textSanitized, g, 'terms', model, 100, 4)
-                    #rs = searchGraphCombined(textSanitized, g, 'combined', model, 100, 2)
+                    rs = searchGraph(textSanitized, g, 'termstfidf', model, 100, 0)
+                    #rs = searchGraphCombined(textSanitized, g, 'combined', model, 100, 4)
                     print '**************'
                     print code, textSanitized
                     #print 'Top 10 results by normalised(by depth) score'
                     #rs.printTopNScores(10);
                     sortedRes = rs.sortByNScore()
                     #sortedRes = rs.sortByTwoScores('nScoreT', 'nScoreS')
+                    #sortedRes = rs.sortAndBlendTwoScores('nScoreT', 'nScoreS')
 
                     # Generate a string of first 10 results
                     top10String = ''

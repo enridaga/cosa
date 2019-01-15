@@ -90,6 +90,9 @@ def matchTermsTFIDF(queryTerms, nodeTerms, nodeTFIDFDic, model, number):
     #print "terms calculated", str(this_time - start_time)
     global modelCache
 
+    '''
+    #ABANDONING THIS DUAL-DIRECTION METHOD TEMPORARILY IN FAVOUR OF A VERY SIMPLE ALGORTIHM, FOR EVALUATION PURPOSES
+    
     #Nested loop twice, once in each directions...
     #Loop nest 1...
     for ttt in t:
@@ -117,6 +120,10 @@ def matchTermsTFIDF(queryTerms, nodeTerms, nodeTFIDFDic, model, number):
                 combinedScore = embeddingRelevancy * termTFIDF
                 if combinedScore > maxNTScore:
                     maxNTScore = combinedScore
+                    print "***** NT->QT MATCH *****"
+                    print "qt, nt, nt-embScore, nt-tfidf: ",qt,ttt,embeddingRelevancy,termTFIDF
+                    print "***** END OF MATCH *****"
+                    #text = sys.stdin.readline()
         ntfreq += maxNTScore
 
     # Loop nest 2, in the other direction...
@@ -138,12 +145,35 @@ def matchTermsTFIDF(queryTerms, nodeTerms, nodeTFIDFDic, model, number):
                 combinedScore = embeddingRelevancy * termTFIDF
                 if combinedScore > maxQTScore:
                     maxQTScore = combinedScore
+                    print "***** QT->NT MATCH *****"
+                    print "qt, nt, nt-embScore, nt-tfidf: ", qt, ttt, embeddingRelevancy, termTFIDF
+                    print "***** END OF MATCH *****"
+                    #text = sys.stdin.readline()
         qtfreq += maxQTScore
 
     # Formula
     ntfOVERns = (ntfreq / nsize) if nsize > 0 else 0.0
     qtfOVERqs = (qtfreq / qsize) if qsize > 0 else 0.0
     score = (ntfOVERns + qtfOVERqs) / 2
+    '''
+    for qt in q:
+        if not isinstance(qt, unicode):
+            qt = unicode(qt, "utf-8")
+        for ttt in t:
+            if ttt in modelCache:
+                dic = modelCache[ttt]
+            else:
+                dic = model.similarToTerm(ttt, number)
+                modelCache[ttt] = dic
+
+            if qt in dic:
+                embeddingRelevancy = dic[qt]
+                termTFIDF = nodeTFIDFDic[ttt]
+                combinedScore = embeddingRelevancy * termTFIDF
+                qtfreq += combinedScore
+
+    score = qtfreq
+
     return score
 
 
@@ -261,6 +291,22 @@ def matchNodes(queryNode, categoryNode, method = 'entities', model = None, embed
         categoryEntities = categoryNode['entities']    
         return matchSubjects(queryEntities, categoryEntities)
     elif method == 'terms':
+        if 'terms' in queryNode:
+            qt = queryNode['terms']
+        else:
+            qt = text2terms(queryNode['label'])
+            queryNode['terms'] = qt
+        if 'terms' in categoryNode:
+            ct = categoryNode['terms']
+        else:
+            #Changing this to create embeddings from full description, not local node label
+            #ct = text2terms(categoryNode['label'])
+            ct = text2terms(categoryNode['allDescriptions'])
+            categoryNode['terms'] = ct
+            #print "Node full Desc: ",categoryNode['allDescriptions']
+        return matchTerms(qt, ct, model, embeddings)
+        #return matchTermsTFIDF(qt, ct, categoryNode['termTFIDF'], model, embeddings)
+    elif method == 'termstfidf':
         if 'terms' in queryNode:
             qt = queryNode['terms']
         else:
