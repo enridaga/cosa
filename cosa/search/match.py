@@ -76,6 +76,81 @@ def matchTerms(queryTerms, nodeTerms, model, number):
     return score
 
 
+
+def matchTermsTFIDF(queryTerms, nodeTerms, nodeTFIDFDic, model, number):
+    #start_time = time.time()
+    # Get terms from query
+    q = queryTerms
+    t = nodeTerms
+    qsize = len(q)
+    nsize = len(t)
+    ntfreq = 0.0
+    qtfreq = 0.0
+    #this_time = time.time()
+    #print "terms calculated", str(this_time - start_time)
+    global modelCache
+
+    #Nested loop twice, once in each directions...
+    #Loop nest 1...
+    for ttt in t:
+        if ttt in modelCache:
+            dic = modelCache[ttt]
+        else:
+            dic = model.similarToTerm(ttt, number)
+            modelCache[ttt] = dic
+
+        #print "q: ",q
+        #print "t: ",t
+        #print "dic: ", dic
+        #print "Press return to continue"
+        #text = sys.stdin.readline()
+        maxNTScore = 0.0
+        for qt in q:
+            if not isinstance(qt, unicode):
+                qt = unicode(qt, "utf-8")
+            if qt in dic:
+                #print "QT:",qt
+                #print "TTT:",ttt
+                #print "catTFIDFDic:",catTFIDFDic
+                embDicScore = dic[qt]
+                try:
+                    tfidfScore = nodeTFIDFDic[ttt]
+                except:
+                    print "**************"
+                    print "qt:",qt
+                    print "node terms:",t
+                    print "ttt not in tfidfDic:",ttt
+                    print "dic:",nodeTFIDFDic
+                combinedScore = embDicScore * tfidfScore
+                if combinedScore > maxNTScore:
+                    maxNTScore = combinedScore
+        ntfreq += maxNTScore
+
+    # Loop nest 2, in the other direction...
+    for qt in q:
+        if not isinstance(qt, unicode):
+            qt = unicode(qt, "utf-8")
+
+        maxQTScore = 0.0
+        for ttt in t:
+            if ttt in modelCache:
+                dic = modelCache[ttt]
+            else:
+                dic = model.similarToTerm(ttt, number)
+                modelCache[ttt] = dic
+
+            if qt in dic:
+                if (dic[qt] * nodeTFIDFDic[ttt]) > maxQTScore:
+                    maxQTScore = (dic[qt] * nodeTFIDFDic[ttt])
+        qtfreq += maxQTScore
+
+    # Formula
+    ntfOVERns = (ntfreq / nsize) if nsize > 0 else 0.0
+    qtfOVERqs = (qtfreq / qsize) if qsize > 0 else 0.0
+    score = (ntfOVERns + qtfOVERqs) / 2
+    return score
+
+
 def __weightedSize(entitySet, distance=5):
     total = 0.0
     #print list(entitySet)
@@ -203,7 +278,8 @@ def matchNodes(queryNode, categoryNode, method = 'entities', model = None, embed
             ct = text2terms(categoryNode['allDescriptions'])
             categoryNode['terms'] = ct
             #print "Node full Desc: ",categoryNode['allDescriptions']
-        return matchTerms(qt, ct, model, embeddings)        
+        #return matchTerms(qt, ct, model, embeddings)
+        return matchTermsTFIDF(qt, ct, categoryNode['termTFIDF'], model, embeddings)
     elif method == 'combined':
         return (matchNodes(queryNode, categoryNode, 'terms', model, embeddings) + matchNodes(queryNode, categoryNode, 'subjects', model, embeddings))/2
 
